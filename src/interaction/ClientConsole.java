@@ -1,0 +1,65 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package interaction;
+
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ *
+ * @author Maxime BLAISE
+ * @version 1.0
+ */
+public class ClientConsole extends AbstractClient {
+
+    public ClientConsole() throws RemoteException {
+    }
+
+    @Override
+    public void receiveMessage(String nameSender, String message) throws RemoteException {
+        System.out.println(nameSender + "-> " + message);
+    }
+
+    /**
+     * Launch main program for client console.
+     *
+     * @param args .
+     */
+    public static void main(String[] args) {
+        try {
+            // Connect to the server
+            Registry registry = LocateRegistry.getRegistry(3212);
+            Server server = (Server) registry.lookup("MainServer");
+            Scanner sc = new Scanner(System.in);
+            String name = askName(sc);
+            ClientConsole client = new ClientConsole();
+            registry.rebind(name, (Client)client);
+            server.connect(name);
+            // 
+            while (true) {
+                String message = sc.nextLine();
+                if (message.equals("exit")) {
+                    sc.close();
+                    System.exit(0);
+                }
+                server.sendMessage(name, message);
+            }
+        } catch (RemoteException | NotBoundException ex) {
+            Logger.getLogger(ClientConsole.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public static String askName(Scanner sc) {
+        System.out.print("Your name : ");
+        return sc.nextLine();
+    }
+}
