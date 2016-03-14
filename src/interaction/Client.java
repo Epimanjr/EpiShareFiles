@@ -13,9 +13,8 @@ public interface Client extends ExchangeClient {
     /**
      * Receive a message from server.
      *
-     * @param nameSender Name of this message's sender.
-     * @param message Message's content.
+     * @param message Message
      * @throws RemoteException .
      */
-    public abstract void receiveMessage(String nameSender, String message) throws RemoteException;
+    public abstract void receiveMessage(Message message) throws RemoteException;
 }

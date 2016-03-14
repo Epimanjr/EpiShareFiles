@@ -13,11 +13,10 @@ public interface Server extends ExchangeClient {
     /**
      * Send a message to all clients.
      *
-     * @param nameSender Name of this message's sender.
-     * @param message Message's content.
+     * @param message Message
      * @throws java.rmi.RemoteException .
      */
-    public abstract void sendMessage(String nameSender, String message) throws RemoteException;
+    public abstract void sendMessage(Message message) throws RemoteException;
 
     /**
      * Connect to the server.

@@ -1,4 +1,3 @@
-
 package interaction;
 
 import java.rmi.AccessException;
@@ -15,7 +14,7 @@ import java.util.logging.Logger;
  * @version 1.0
  */
 public class ServerConsole extends AbstractServer {
-    
+
     /**
      * Server name in console.
      */
@@ -23,9 +22,7 @@ public class ServerConsole extends AbstractServer {
 
     public ServerConsole() throws RemoteException {
     }
-    
-    
-    
+
     /**
      * Launch main program for server console.
      *
@@ -33,11 +30,16 @@ public class ServerConsole extends AbstractServer {
      */
     public static void main(String[] args) {
         try {
-            Registry registry = Network.getRegistry();
-            registry.rebind(ServerConsole.SERVER_NAME, (Server)new ServerConsole());
+            Registry registry = Network.createRegistry();
+            registry.rebind(ServerConsole.SERVER_NAME, (Server) new ServerConsole());
             System.out.println("Server is now ready.");
         } catch (RemoteException ex) {
             Logger.getLogger(ServerConsole.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    @Override
+    public void notificationForServer(Message message) {
+        System.out.println(message.getNameSender() + "-> " + message.getContent());
     }
 }

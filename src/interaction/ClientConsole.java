@@ -1,4 +1,3 @@
-
 package interaction;
 
 import java.rmi.NotBoundException;
@@ -20,8 +19,8 @@ public class ClientConsole extends AbstractClient {
     }
 
     @Override
-    public void receiveMessage(String nameSender, String message) throws RemoteException {
-        System.out.println(nameSender + "-> " + message);
+    public void receiveMessage(Message message) throws RemoteException {
+        System.out.println(message.getNameSender() + "-> " + message.getContent());
     }
 
     /**
@@ -37,7 +36,7 @@ public class ClientConsole extends AbstractClient {
             Scanner sc = new Scanner(System.in);
             String name = askName(sc);
             ClientConsole client = new ClientConsole();
-            registry.rebind(name, (Client)client);
+            registry.rebind(name, (Client) client);
             server.connect(name);
             // 
             client.sendFile(name, ServerConsole.SERVER_NAME, "test.pdf");

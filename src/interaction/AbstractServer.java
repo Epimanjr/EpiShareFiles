@@ -50,23 +50,25 @@ public abstract class AbstractServer extends FileTransfer implements Server {
     }
     
     @Override
-    public void sendMessage(String nameSender, String message) throws RemoteException {
-        System.out.println(nameSender + "-> " + message);
+    public void sendMessage(Message message) throws RemoteException {
+        notificationForServer(message);
         Registry registry = LocateRegistry.getRegistry(3212);
         // Clients loop
         for(String str : this.getListClients()) {
             try {
                 Client client = (Client)registry.lookup(str);
-                client.receiveMessage(nameSender, message);
+                client.receiveMessage(message);
             } catch (NotBoundException | AccessException ex) {
                 Logger.getLogger(AbstractServer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
+    
+    public abstract void notificationForServer(Message message);
 
     @Override
-    public void connect(String nameClient) throws RemoteException {
-        this.sendMessage(ServerConsole.SERVER_NAME, nameClient + " is now connected.");
+    public void connect(String nameClient) throws RemoteException {   
         this.addClient(nameClient);
+        this.sendMessage(new Message(nameClient + " is now connected.", ServerConsole.SERVER_NAME));
     }
 }

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="373.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="interaction.ClientGraphic">
+    <children>
+        <ScrollPane layoutX="34.0" layoutY="57.0" prefHeight="264.0" prefWidth="533.0">
+            <TextFlow fx:id="chatBox" layoutX="34.0" layoutY="57.0" prefHeight="244.0" prefWidth="513.0" />
+        </ScrollPane>
+        <TextField fx:id="tfNickname" layoutX="34.0" layoutY="21.0" />
+        <TextField fx:id="tfMessage" layoutX="34.0" layoutY="334.0" prefHeight="25.0" prefWidth="533.0" />
+        <Button fx:id="butConnect" alignment="CENTER" graphicTextGap="2.0" layoutX="193.0" layoutY="21.0" mnemonicParsing="false" onAction="#actionConnect" prefHeight="25.0" prefWidth="122.0" text="Connect" textFill="#34a174" />
+        <Label fx:id="labConnectStatus" layoutX="371.0" layoutY="6.0" prefHeight="17.0" prefWidth="161.0" text="Not Connected Yet." textAlignment="RIGHT" />
+        <Button fx:id="butQuit" layoutX="541.0" layoutY="2.0" mnemonicParsing="false" onAction="#actionQuit" text="Quit" />
+    </children>
+</AnchorPane>
