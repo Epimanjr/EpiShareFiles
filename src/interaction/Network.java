@@ -15,6 +15,10 @@ public class Network {
     public static int port = 3212;
     
     public static Registry getRegistry() throws RemoteException {
-        return LocateRegistry.getRegistry(3212);
+        return LocateRegistry.getRegistry(port);
+    }
+    
+    public static Registry createRegistry() throws RemoteException {
+        return LocateRegistry.createRegistry(port);
     }
 }

@@ -16,31 +16,15 @@ import java.util.logging.Logger;
  */
 public class ServerConsole extends AbstractServer {
     
+    /**
+     * Server name in console.
+     */
     public static final String SERVER_NAME = "ServerConsole";
 
     public ServerConsole() throws RemoteException {
     }
     
-    @Override
-    public void sendMessage(String nameSender, String message) throws RemoteException {
-        System.out.println(nameSender + "-> " + message);
-        Registry registry = LocateRegistry.getRegistry(3212);
-        // Clients loop
-        for(String str : this.getListClients()) {
-            try {
-                Client client = (Client)registry.lookup(str);
-                client.receiveMessage(nameSender, message);
-            } catch (NotBoundException | AccessException ex) {
-                Logger.getLogger(ServerConsole.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }
-
-    @Override
-    public void connect(String nameClient) throws RemoteException {
-        this.sendMessage(ServerConsole.SERVER_NAME, nameClient + " is now connected.");
-        this.addClient(nameClient);
-    }
+    
     
     /**
      * Launch main program for server console.

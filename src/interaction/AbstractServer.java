@@ -1,8 +1,14 @@
 package interaction;
 
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -41,5 +47,26 @@ public abstract class AbstractServer extends FileTransfer implements Server {
             }
         }
         System.out.println("All send complete.");
+    }
+    
+    @Override
+    public void sendMessage(String nameSender, String message) throws RemoteException {
+        System.out.println(nameSender + "-> " + message);
+        Registry registry = LocateRegistry.getRegistry(3212);
+        // Clients loop
+        for(String str : this.getListClients()) {
+            try {
+                Client client = (Client)registry.lookup(str);
+                client.receiveMessage(nameSender, message);
+            } catch (NotBoundException | AccessException ex) {
+                Logger.getLogger(AbstractServer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    @Override
+    public void connect(String nameClient) throws RemoteException {
+        this.sendMessage(ServerConsole.SERVER_NAME, nameClient + " is now connected.");
+        this.addClient(nameClient);
     }
 }
