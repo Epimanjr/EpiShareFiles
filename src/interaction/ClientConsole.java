@@ -1,11 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package interaction;
 
-import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -38,21 +33,22 @@ public class ClientConsole extends AbstractClient {
         try {
             // Connect to the server
             Registry registry = LocateRegistry.getRegistry(3212);
-            Server server = (Server) registry.lookup("MainServer");
+            Server server = (Server) registry.lookup(ServerConsole.SERVER_NAME);
             Scanner sc = new Scanner(System.in);
             String name = askName(sc);
             ClientConsole client = new ClientConsole();
             registry.rebind(name, (Client)client);
             server.connect(name);
             // 
-            while (true) {
+            client.sendFile(name, ServerConsole.SERVER_NAME, "test.pdf");
+            /*while (true) {
                 String message = sc.nextLine();
                 if (message.equals("exit")) {
                     sc.close();
                     System.exit(0);
                 }
                 server.sendMessage(name, message);
-            }
+            }*/
         } catch (RemoteException | NotBoundException ex) {
             Logger.getLogger(ClientConsole.class.getName()).log(Level.SEVERE, null, ex);
         }

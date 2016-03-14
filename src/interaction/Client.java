@@ -8,7 +8,7 @@ import java.rmi.RemoteException;
  * @author Maxime BLAISE
  * @version 1.0
  */
-public interface Client extends Remote {
+public interface Client extends ExchangeClient {
 
     /**
      * Receive a message from server.

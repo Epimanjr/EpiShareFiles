@@ -13,7 +13,7 @@ import java.rmi.server.UnicastRemoteObject;
  * @author Maxime BLAISE
  * @version 1.0
  */
-public abstract class AbstractClient extends UnicastRemoteObject implements Client {
+public abstract class AbstractClient extends FileTransfer implements Client {
 
     
     public AbstractClient() throws RemoteException {

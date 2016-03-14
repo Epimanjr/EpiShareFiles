@@ -8,7 +8,7 @@ import java.rmi.RemoteException;
  * @author Maxime BLAISE
  * @version 1.0
  */
-public interface Server extends Remote {
+public interface Server extends ExchangeClient {
 
     /**
      * Send a message to all clients.

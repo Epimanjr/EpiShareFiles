@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * @author Maxime BLAISE
  * @version 1.0
  */
-public abstract class AbstractServer extends UnicastRemoteObject implements Server {
+public abstract class AbstractServer extends FileTransfer implements Server {
 
     /**
      * List of clients connected to the server.

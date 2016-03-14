@@ -15,6 +15,8 @@ import java.util.logging.Logger;
  * @version 1.0
  */
 public class ServerConsole extends AbstractServer {
+    
+    public static final String SERVER_NAME = "ServerConsole";
 
     public ServerConsole() throws RemoteException {
     }
@@ -36,7 +38,7 @@ public class ServerConsole extends AbstractServer {
 
     @Override
     public void connect(String nameClient) throws RemoteException {
-        this.sendMessage("MainServer", nameClient + " is now connected.");
+        this.sendMessage(ServerConsole.SERVER_NAME, nameClient + " is now connected.");
         this.addClient(nameClient);
     }
     
@@ -48,7 +50,7 @@ public class ServerConsole extends AbstractServer {
     public static void main(String[] args) {
         try {
             Registry registry = LocateRegistry.createRegistry(3212);
-            registry.rebind("MainServer", (Server)new ServerConsole());
+            registry.rebind(ServerConsole.SERVER_NAME, (Server)new ServerConsole());
             System.out.println("Server is now ready.");
         } catch (RemoteException ex) {
             Logger.getLogger(ServerConsole.class.getName()).log(Level.SEVERE, null, ex);
