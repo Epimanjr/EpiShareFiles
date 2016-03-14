@@ -1,5 +1,7 @@
 package interaction;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -39,8 +41,8 @@ public class ClientConsole extends AbstractClient {
             registry.rebind(name, (Client) client);
             server.connect(name);
             // 
-            client.sendFile(name, ServerConsole.SERVER_NAME, "test.pdf");
-            server.sendFileToAll(name, "test.pdf");
+            client.sendFile(name, ServerConsole.SERVER_NAME, new File("test.pdf"));
+            server.sendFileToAll(name, new File("test.pdf"));
             /*while (true) {
                 String message = sc.nextLine();
                 if (message.equals("exit")) {
@@ -58,4 +60,5 @@ public class ClientConsole extends AbstractClient {
         System.out.print("Your name : ");
         return sc.nextLine();
     }
+
 }

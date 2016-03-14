@@ -70,7 +70,7 @@ public class ServerGraphic extends AbstractServer implements Initializable {
 
     @Override
     public void notificationForServer(Message message) {
-        Text textMessage = new Text(message.getContent()+"\n");
+        Text textMessage = new Text(message.getNameSender() + "-> " + message.getContent()+"\n");
         textMessage.setFont(new Font(message.getFont()));
         textMessage.setFill(Color.web(message.getColor()));
         if (getChatBox() == null) {

@@ -1,5 +1,6 @@
 package interaction;
 
+import java.io.File;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -26,5 +27,5 @@ public interface Server extends ExchangeClient {
      */
     public abstract void connect(String nameClient) throws RemoteException;
     
-    public abstract void sendFileToAll(String senderName, String filename) throws RemoteException;
+    public abstract void sendFileToAll(String senderName, File file) throws RemoteException;
 }

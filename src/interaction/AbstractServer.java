@@ -1,5 +1,6 @@
 package interaction;
 
+import java.io.File;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -39,11 +40,11 @@ public abstract class AbstractServer extends FileTransfer implements Server {
     }
     
     @Override
-    public void sendFileToAll(String senderName, String filename) throws RemoteException {
-        System.out.println("Send " + filename + " to all clients : ");
+    public void sendFileToAll(String senderName, File file) throws RemoteException {
+        System.out.println("Send " + file.getName() + " to all clients : ");
         for(String str: this.listClients) {
             if(!str.equals(senderName)) {
-                sendFile(senderName, str, filename);
+                sendFile(senderName, str, file);
             }
         }
         System.out.println("All send complete.");

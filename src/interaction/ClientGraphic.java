@@ -5,6 +5,7 @@
  */
 package interaction;
 
+import java.io.File;
 import java.net.URL;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
@@ -32,6 +33,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
 /**
@@ -54,6 +56,8 @@ public class ClientGraphic extends AbstractClient implements Initializable {
 
     Server server = null;
     boolean connect = !false;
+
+    String currentNickname;
 
     public ClientGraphic() throws RemoteException {
     }
@@ -95,9 +99,26 @@ public class ClientGraphic extends AbstractClient implements Initializable {
     public ClientGraphic returnThis() {
         return this;
     }
-    
+
+    public void actionSendFile(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open the file to send");
+        File file = fileChooser.showOpenDialog(null);
+        try {
+            sendFile(currentNickname, ServerConsole.SERVER_NAME, file);
+            server.sendFileToAll(currentNickname, file);
+        } catch (RemoteException ex) {
+            Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     public void actionSendMessage(ActionEvent event) {
-        
+        try {
+            server.sendMessage(new Message(tfMessage.getText(), currentNickname));
+            tfMessage.setText("");
+        } catch (RemoteException ex) {
+            Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     public void actionConnect(ActionEvent event) {
@@ -139,6 +160,7 @@ public class ClientGraphic extends AbstractClient implements Initializable {
     public void majGuiAfterConnect(String nickname) {
         Timeline timeline1 = new Timeline();
         timeline1.getKeyFrames().add(new KeyFrame(Duration.millis(1), (ActionEvent actionEvent) -> {
+            currentNickname = nickname;
             butConnect.setVisible(false);
             labConnectStatus.setText("Connected as " + nickname);
         }));

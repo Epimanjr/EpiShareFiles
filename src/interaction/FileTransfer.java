@@ -30,9 +30,9 @@ public abstract class FileTransfer extends UnicastRemoteObject {
     public FileTransfer() throws RemoteException {
     }
 
-    public void beginReceiveFile(String senderName, String targetName, String filename) throws RemoteException, FileNotFoundException {
-        output = new FileOutputStream(new File(targetName + "/" + filename));
-        System.out.println("Receiving " + filename + " from " + senderName + " ... ");
+    public void beginReceiveFile(String senderName, String targetName, File file) throws RemoteException, FileNotFoundException {
+        output = new FileOutputStream(targetName + "/" + file.getName());
+        System.out.println("Receiving " + file.getName() + " from " + senderName + " ... ");
     }
 
     public void receiveContentFile(byte[] buf, int bytesRead) throws RemoteException, IOException {
@@ -53,17 +53,17 @@ public abstract class FileTransfer extends UnicastRemoteObject {
         }
     }
 
-    public void sendFile(String senderName, String targetName, String filename) throws RemoteException {
+    public void sendFile(String senderName, String targetName, File file) throws RemoteException {
         Registry registry = Network.getRegistry();
         try {
             // Get target client
             ExchangeClient client = (ExchangeClient) registry.lookup(targetName);
-            client.beginReceiveFile(senderName, targetName, filename);
+            client.beginReceiveFile(senderName, targetName, file);
 
             try {
-                System.out.println("Send " + filename + " to " + targetName + " ... ");
+                System.out.println("Send " + file.getName() + " to " + targetName + " ... ");
                 // Send file
-                input = new FileInputStream(new File(senderName + "/" + filename));
+                input = new FileInputStream(file);
                 byte[] buf = new byte[1024];
                 int bytesRead;
                 while ((bytesRead = input.read(buf)) > 0) {
