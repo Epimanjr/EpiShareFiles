@@ -28,4 +28,6 @@ public interface Server extends ExchangeClient {
     public abstract void connect(String nameClient) throws RemoteException;
     
     public abstract void sendFileToAll(String senderName, File file) throws RemoteException;
+    
+     public abstract void notificationForServer(Message message) throws RemoteException;
 }

@@ -26,13 +26,33 @@ public abstract class FileTransfer extends UnicastRemoteObject {
     InputStream input = null;
     OutputStream output = null;
     boolean outputBusy = false;
+    String currentTargetName = "";
 
     public FileTransfer() throws RemoteException {
     }
 
+    public void notifyStateTransfer(File file, int state) {
+        try {
+            String content = (state == 1) ? "File Transfer Complete" : "Receiving " + file.getName() + " from " + currentTargetName + " ... ";
+            Message message = new Message(content, currentTargetName, "#00ff00", 14);
+            if (currentTargetName.equals(ServerGraphic.SERVER_NAME) || currentTargetName.equals(ServerConsole.SERVER_NAME)) {
+                Server server = (Server) Network.getRegistry().lookup(currentTargetName);
+                server.notificationForServer(message);
+            } else {
+                Client client = (Client) Network.getRegistry().lookup(currentTargetName);
+                client.receiveMessage(message);
+            }
+        } catch (NotBoundException | AccessException ex) {
+            Logger.getLogger(FileTransfer.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (RemoteException ex) {
+            Logger.getLogger(FileTransfer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     public void beginReceiveFile(String senderName, String targetName, File file) throws RemoteException, FileNotFoundException {
         output = new FileOutputStream(targetName + "/" + file.getName());
-        System.out.println("Receiving " + file.getName() + " from " + senderName + " ... ");
+        currentTargetName = targetName;
+        notifyStateTransfer(file, 0);
     }
 
     public void receiveContentFile(byte[] buf, int bytesRead) throws RemoteException, IOException {
@@ -46,8 +66,8 @@ public abstract class FileTransfer extends UnicastRemoteObject {
     public void endReceiveFile() throws RemoteException, IOException {
         if (output != null) {
             output.close();
-            System.out.println("File transfer complete.");
 
+            notifyStateTransfer(null, 1);
         } else {
             System.err.println("Error: OutputStream is null.");
         }

@@ -69,7 +69,7 @@ public class ServerGraphic extends AbstractServer implements Initializable {
     }
 
     @Override
-    public void notificationForServer(Message message) {
+    public void notificationForServer(Message message) throws RemoteException {
         Text textMessage = new Text(message.getNameSender() + "-> " + message.getContent()+"\n");
         textMessage.setFont(new Font(message.getFont()));
         textMessage.setFill(Color.web(message.getColor()));

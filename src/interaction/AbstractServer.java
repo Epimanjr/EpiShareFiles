@@ -65,7 +65,7 @@ public abstract class AbstractServer extends FileTransfer implements Server {
         }
     }
     
-    public abstract void notificationForServer(Message message);
+   
 
     @Override
     public void connect(String nameClient) throws RemoteException {   

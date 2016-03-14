@@ -105,7 +105,7 @@ public class ClientGraphic extends AbstractClient implements Initializable {
         fileChooser.setTitle("Open the file to send");
         File file = fileChooser.showOpenDialog(null);
         try {
-            sendFile(currentNickname, ServerConsole.SERVER_NAME, file);
+            sendFile(currentNickname, ServerGraphic.SERVER_NAME, file);
             server.sendFileToAll(currentNickname, file);
         } catch (RemoteException ex) {
             Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
