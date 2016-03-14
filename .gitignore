@@ -3,3 +3,7 @@
 /build/
 build.xml
 manifest.mf
+/ServerConsole/*
+/ServerConsole/
+/ServerGraphic/*
+/ServerGraphic/

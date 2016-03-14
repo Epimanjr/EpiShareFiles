@@ -1,10 +1,12 @@
 package interaction;
 
+import java.io.File;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,6 +23,7 @@ public class ServerConsole extends AbstractServer {
     public static final String SERVER_NAME = "ServerConsole";
 
     public ServerConsole() throws RemoteException {
+        setFolderName("ServerConsole");
     }
 
     /**
@@ -42,4 +45,16 @@ public class ServerConsole extends AbstractServer {
     public void notificationForServer(Message message) {
         System.out.println(message.getNameSender() + "-> " + message.getContent());
     }
+    
+    @Override
+    public ArrayList<File> askListFiles() {
+        return AbstractServer.askListFiles(ServerConsole.SERVER_NAME);
+    }
+
+    @Override
+    public void disconnect(String nameClient) throws RemoteException {
+        
+    }
+    
+    
 }

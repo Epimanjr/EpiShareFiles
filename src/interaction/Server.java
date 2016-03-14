@@ -3,6 +3,7 @@ package interaction;
 import java.io.File;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 
 /**
  *
@@ -27,7 +28,19 @@ public interface Server extends ExchangeClient {
      */
     public abstract void connect(String nameClient) throws RemoteException;
     
+    /**
+     * Disconnect to the server.
+     *
+     * @param nameClient Name of the client who wants to disconnect to the server.
+     * @throws RemoteException .
+     */
+    public abstract void disconnect(String nameClient) throws RemoteException;
+
     public abstract void sendFileToAll(String senderName, File file) throws RemoteException;
+
+    public abstract void notificationForServer(Message message) throws RemoteException;
+
+    public abstract ArrayList<String> askListConnectedUsers() throws RemoteException;
     
-     public abstract void notificationForServer(Message message) throws RemoteException;
+    public ArrayList<File> askListFiles() throws RemoteException;
 }

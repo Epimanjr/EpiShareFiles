@@ -17,4 +17,6 @@ public interface Client extends ExchangeClient {
      * @throws RemoteException .
      */
     public abstract void receiveMessage(Message message) throws RemoteException;
+    
+    public abstract void setInfosServer() throws RemoteException;
 }

@@ -61,4 +61,8 @@ public class ClientConsole extends AbstractClient {
         return sc.nextLine();
     }
 
+    @Override
+    public void setInfosServer() throws RemoteException {
+    }
+
 }

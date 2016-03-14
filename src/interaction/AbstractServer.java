@@ -8,6 +8,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,6 +23,8 @@ public abstract class AbstractServer extends FileTransfer implements Server {
      * List of clients connected to the server.
      */
     private final ArrayList<String> listClients = new ArrayList<>();
+    
+    private String folderName;
 
     public AbstractServer() throws RemoteException {
     }
@@ -37,6 +40,20 @@ public abstract class AbstractServer extends FileTransfer implements Server {
      */
     public void addClient(String nameClient) {
         this.listClients.add(nameClient);
+    }
+    
+    /**
+     * Remove a new client to the list.
+     *
+     * @param nameClient Name of the client
+     */
+    public void removeClient(String nameClient) {
+        this.listClients.remove(nameClient);
+    }
+    
+    @Override
+    public ArrayList<String> askListConnectedUsers() throws RemoteException {
+        return listClients;
     }
     
     @Override
@@ -72,4 +89,27 @@ public abstract class AbstractServer extends FileTransfer implements Server {
         this.addClient(nameClient);
         this.sendMessage(new Message(nameClient + " is now connected.", ServerConsole.SERVER_NAME));
     }
+    
+    @Override
+    public void disconnect(String nameClient) throws RemoteException {   
+        this.removeClient(nameClient);
+        this.sendMessage(new Message(nameClient + " is now disconnected.", ServerConsole.SERVER_NAME));
+    }
+    
+    public static ArrayList<File> askListFiles(String folderName) {
+        ArrayList<File> list = new ArrayList<>();
+        File file = new File(folderName);
+        list.addAll(Arrays.asList(file.listFiles()));
+        return list;
+    }
+
+    public String getFolderName() {
+        return folderName;
+    }
+
+    public final void setFolderName(String folderName) {
+        this.folderName = folderName;
+    }
+    
+    
 }

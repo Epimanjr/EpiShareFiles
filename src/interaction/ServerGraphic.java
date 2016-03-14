@@ -10,15 +10,20 @@ import interaction.Network;
 import interaction.Server;
 import interaction.ServerConsole;
 import interaction.ServerGraphic;
+import java.io.File;
 import java.net.URL;
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.animation.KeyFrame;
 import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -50,6 +55,7 @@ public class ServerGraphic extends AbstractServer implements Initializable {
     private TextFlow chatBox;
 
     public ServerGraphic() throws RemoteException {
+        setFolderName("ServerGraphic");
     }
 
     /**
@@ -57,7 +63,21 @@ public class ServerGraphic extends AbstractServer implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-
+        Timeline timeline1 = new Timeline();
+        timeline1.getKeyFrames().add(new KeyFrame(Duration.millis(5000), (ActionEvent actionEvent) -> {
+            getListClients().stream().forEach((str) -> {
+                try {
+                    Client client = (Client) Network.getRegistry().lookup(str);
+                    client.setInfosServer();
+                } catch (RemoteException | NotBoundException ex) {
+                    Logger.getLogger(ServerGraphic.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            });
+        }));
+        timeline1.setCycleCount(Timeline.INDEFINITE);
+        SequentialTransition animation = new SequentialTransition();
+        animation.getChildren().addAll(timeline1);
+        animation.play();
     }
 
     public void actionQuit(ActionEvent event) {
@@ -70,26 +90,25 @@ public class ServerGraphic extends AbstractServer implements Initializable {
 
     @Override
     public void notificationForServer(Message message) throws RemoteException {
-        Text textMessage = new Text(message.getNameSender() + "-> " + message.getContent()+"\n");
+        Text textMessage = new Text(message.getNameSender() + "-> " + message.getContent() + "\n");
         textMessage.setFont(new Font(message.getFont()));
         textMessage.setFill(Color.web(message.getColor()));
         if (getChatBox() == null) {
             System.err.println("TextFlow NULL");
         } else {
-            Timeline timeline1 = new Timeline();
-            timeline1.getKeyFrames().add(new KeyFrame(Duration.millis(1), (ActionEvent actionEvent) -> {
+            Platform.runLater(() -> {
                 getChatBox().getChildren().add(textMessage);
-            }));
-            timeline1.setCycleCount(1);
-            SequentialTransition animation = new SequentialTransition();
-            animation.getChildren().addAll(timeline1);
-            animation.play();
-
+            });   
         }
     }
 
     public TextFlow getChatBox() {
         return chatBox;
+    }
+
+    @Override
+    public ArrayList<File> askListFiles() {
+        return AbstractServer.askListFiles(ServerGraphic.SERVER_NAME);
     }
 
 }

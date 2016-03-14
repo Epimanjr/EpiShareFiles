@@ -7,34 +7,24 @@ package interaction;
 
 import java.io.File;
 import java.net.URL;
-import java.rmi.AccessException;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.Registry;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.animation.KeyFrame;
-import javafx.animation.SequentialTransition;
-import javafx.animation.Timeline;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.concurrent.Service;
-import javafx.concurrent.Task;
-import javafx.concurrent.WorkerStateEvent;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
-import javafx.util.Duration;
 
 /**
  * FXML Controller class
@@ -48,11 +38,12 @@ public class ClientGraphic extends AbstractClient implements Initializable {
     @FXML
     private Label labConnectStatus;
     @FXML
-    private TextField tfNickname;
-    @FXML
     private TextField tfMessage;
+
     @FXML
-    private Button butConnect;
+    private ListView listUsers;
+    @FXML
+    private ListView listFiles;
 
     Server server = null;
     boolean connect = !false;
@@ -73,27 +64,16 @@ public class ClientGraphic extends AbstractClient implements Initializable {
             server.connect(name);*/
     }
 
-    public void initConnect() {
-        try {
-            // Connect to the server
-            receiveMessage(new Message("Try to connect to the server ... ", ServerGraphic.SERVER_NAME));
-            Registry registry = Network.getRegistry();
-            server = (Server) registry.lookup(ServerGraphic.SERVER_NAME);
-            receiveMessage(new Message("Success", ServerGraphic.SERVER_NAME));
-            //butConnect.visibleProperty().bindBidirectional(new SimpleObjectProperty<>(connect));
-        } catch (RemoteException | NotBoundException ex) {
-            try {
-                receiveMessage(new Message("Echec", ServerGraphic.SERVER_NAME));
-            } catch (RemoteException ex1) {
-                Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex1);
-            }
-            Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
     @FXML
     public void actionQuit(ActionEvent event) {
-        System.exit(0);
+        try {
+            server.disconnect(currentNickname);
+        } catch (RemoteException ex) {
+            Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            System.exit(0);
+        }
+        
     }
 
     public ClientGraphic returnThis() {
@@ -106,7 +86,7 @@ public class ClientGraphic extends AbstractClient implements Initializable {
         File file = fileChooser.showOpenDialog(null);
         try {
             sendFile(currentNickname, ServerGraphic.SERVER_NAME, file);
-            server.sendFileToAll(currentNickname, file);
+            //server.sendFileToAll(currentNickname, file);
         } catch (RemoteException ex) {
             Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -121,53 +101,36 @@ public class ClientGraphic extends AbstractClient implements Initializable {
         }
     }
 
-    public void actionConnect(ActionEvent event) {
-        Service<Void> service = new Service<Void>() {
-            @Override
-            protected Task<Void> createTask() {
-                return new Task<Void>() {
-                    @Override
-                    protected Void call() throws Exception {
-                        //System.out.println("*** Appel du service de connexion ***");
-                        try {
-                            //System.out.print("Récupération du registre ... ");
-                            Registry registry = Network.getRegistry();
-                            //System.out.println("OK");
-                            String nickName = tfNickname.getText();
-                            //System.out.print("Enregistrement ... ");
-                            registry.rebind(nickName, (Client) returnThis());
-                            //System.out.println("OK");
-                            //System.out.print("Appel du serveur ... ");
-                            server.connect(nickName);
-                            majGuiAfterConnect(nickName);
-                            //System.out.println("OK");
-                        } catch (RemoteException ex) {
-                            Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-
-                        return null;
-                    }
-                };
-            }
-        };
-        service.start();
-        service.setOnSucceeded((WorkerStateEvent event1) -> {
-            System.out.println("OK, vous êtes maintenant connecté.");
-            connect = !true;
+    public void actionConnect(String nickname, Server server) {
+        this.server = server;
+        currentNickname = nickname;
+        Platform.runLater(() -> {
+            labConnectStatus.setText("Connected as " + nickname);
         });
+        try {
+            setInfosServer();
+        } catch (RemoteException ex) {
+            Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
-    public void majGuiAfterConnect(String nickname) {
-        Timeline timeline1 = new Timeline();
-        timeline1.getKeyFrames().add(new KeyFrame(Duration.millis(1), (ActionEvent actionEvent) -> {
-            currentNickname = nickname;
-            butConnect.setVisible(false);
-            labConnectStatus.setText("Connected as " + nickname);
-        }));
-        timeline1.setCycleCount(1);
-        SequentialTransition animation = new SequentialTransition();
-        animation.getChildren().addAll(timeline1);
-        animation.play();
+    @Override
+    public void setInfosServer() throws RemoteException {
+        Platform.runLater(() -> {
+            try {
+                // List users
+                ArrayList<String> listTmp = server.askListConnectedUsers();
+                listUsers.setItems(FXCollections.observableArrayList(listTmp));
+                // List files
+                ArrayList<String> nameFiles = new ArrayList<>();
+                server.askListFiles().stream().forEach((f) -> {
+                    nameFiles.add(f.getName());
+                });
+                listFiles.setItems(FXCollections.observableArrayList(nameFiles));
+            } catch (RemoteException ex) {
+                Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
 
     }
 
@@ -179,15 +142,9 @@ public class ClientGraphic extends AbstractClient implements Initializable {
         Text textMessage = new Text(message.getContent() + "\n");
         textMessage.setFont(new Font(message.getFont()));
         textMessage.setFill(Color.web(message.getColor()));
-        Timeline timeline1 = new Timeline();
-        timeline1.getKeyFrames().add(new KeyFrame(Duration.millis(1), (ActionEvent actionEvent) -> {
+        Platform.runLater(() -> {
             chatBox.getChildren().addAll(textSender, textMessage);
-        }));
-        timeline1.setCycleCount(1);
-        SequentialTransition animation = new SequentialTransition();
-        animation.getChildren().addAll(timeline1);
-        animation.play();
-
+        });
     }
 
     public TextFlow getChatBox() {
