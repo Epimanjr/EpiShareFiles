@@ -26,4 +26,6 @@ public interface Server extends ExchangeClient {
      * @throws RemoteException .
      */
     public abstract void connect(String nameClient) throws RemoteException;
+    
+    public abstract void sendFileToAll(String senderName, String filename) throws RemoteException;
 }

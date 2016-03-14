@@ -49,7 +49,7 @@ public class ServerConsole extends AbstractServer {
      */
     public static void main(String[] args) {
         try {
-            Registry registry = LocateRegistry.createRegistry(3212);
+            Registry registry = Network.getRegistry();
             registry.rebind(ServerConsole.SERVER_NAME, (Server)new ServerConsole());
             System.out.println("Server is now ready.");
         } catch (RemoteException ex) {

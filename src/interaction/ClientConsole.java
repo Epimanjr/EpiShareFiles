@@ -32,7 +32,7 @@ public class ClientConsole extends AbstractClient {
     public static void main(String[] args) {
         try {
             // Connect to the server
-            Registry registry = LocateRegistry.getRegistry(3212);
+            Registry registry = Network.getRegistry();
             Server server = (Server) registry.lookup(ServerConsole.SERVER_NAME);
             Scanner sc = new Scanner(System.in);
             String name = askName(sc);
@@ -41,6 +41,7 @@ public class ClientConsole extends AbstractClient {
             server.connect(name);
             // 
             client.sendFile(name, ServerConsole.SERVER_NAME, "test.pdf");
+            server.sendFileToAll(name, "test.pdf");
             /*while (true) {
                 String message = sc.nextLine();
                 if (message.equals("exit")) {

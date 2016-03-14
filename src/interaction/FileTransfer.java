@@ -54,7 +54,7 @@ public abstract class FileTransfer extends UnicastRemoteObject {
     }
 
     public void sendFile(String senderName, String targetName, String filename) throws RemoteException {
-        Registry registry = LocateRegistry.getRegistry(3212);
+        Registry registry = Network.getRegistry();
         try {
             // Get target client
             ExchangeClient client = (ExchangeClient) registry.lookup(targetName);
@@ -69,6 +69,7 @@ public abstract class FileTransfer extends UnicastRemoteObject {
                 while ((bytesRead = input.read(buf)) > 0) {
                     client.receiveContentFile(buf, bytesRead);
                 }
+                input.close();
                 client.endReceiveFile();
                 System.out.println("File transfer complete.");
             } catch (IOException ex) {

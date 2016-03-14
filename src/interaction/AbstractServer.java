@@ -31,4 +31,15 @@ public abstract class AbstractServer extends FileTransfer implements Server {
     public void addClient(String nameClient) {
         this.listClients.add(nameClient);
     }
+    
+    @Override
+    public void sendFileToAll(String senderName, String filename) throws RemoteException {
+        System.out.println("Send " + filename + " to all clients : ");
+        for(String str: this.listClients) {
+            if(!str.equals(senderName)) {
+                sendFile(senderName, str, filename);
+            }
+        }
+        System.out.println("All send complete.");
+    }
 }
