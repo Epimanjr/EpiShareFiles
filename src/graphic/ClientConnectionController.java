@@ -22,15 +22,23 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.animation.KeyFrame;
+import javafx.animation.SequentialTransition;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 /**
  * FXML Controller class
@@ -49,9 +57,16 @@ public class ClientConnectionController implements Initializable {
     @FXML
     private Label labResultConnection;
 
+    @FXML
+    private ProgressBar connectionProgress;
+
     ClientGraphic client = null;
     Scene scene = null;
     Stage actuel = null;
+
+    Float progressValue = 0.2f;
+
+    Server server = null;
 
     /**
      * Initializes the controller class.
@@ -81,38 +96,87 @@ public class ClientConnectionController implements Initializable {
             Network.port = 3212;
         }
 
-        Task task = new Task() {
+        contactServer(nickname);
+
+        /*Platform.runLater(() -> {
+        try {
+        Registry registry = Network.getRegistry();
+        Server server = (Server) registry.lookup(ServerGraphic.SERVER_NAME);
+        //registry.rebind(nickname, (Client) client);
+        server.connect(nickname, (Client) client);
+        actuel.close();
+        Stage stage = new Stage();
+        stage.setScene(scene);
+        client.actionConnect(nickname, server);
+        stage.setTitle(APPLICATION_NAME);
+        stage.show();
+        } catch (RemoteException | NotBoundException ex) {
+        Logger.getLogger(ClientConnectionController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        });*/
+    }
+    
+    private void launchClientGUI(String nickname) {
+        Stage stage = new Stage();
+        stage.setScene(scene);
+        client.actionConnect(nickname, server);
+        stage.setTitle(APPLICATION_NAME);
+        
+        actuel.close();
+        stage.show();
+    }
+
+    private void connectServer(String nickname) {
+        try {
+            labResultConnection.setText("Trying to connect ...");
+            server.connect(nickname, (Client) client);
+            launchClientGUI(nickname);
+        } catch (RemoteException ex) {
+            labResultConnection.setText("Don't able to connect to server.");
+        }
+    }
+
+    private void contactServer(String nickname) {
+        Timeline timeline1 = new Timeline();
+        progressValue = 0.02f;
+        timeline1.getKeyFrames().add(new KeyFrame(Duration.millis(100), (ActionEvent actionEvent) -> {
+            connectionProgress.setProgress(progressValue);
+            progressValue += 0.02f;
+        }));
+        timeline1.setCycleCount(50);
+        SequentialTransition animation = new SequentialTransition();
+        animation.getChildren().addAll(timeline1);
+
+        Service service = new Service() {
             @Override
-            protected Object call() throws Exception {
-                Registry registry = Network.getRegistry();
-                Server server = (Server) registry.lookup(ServerGraphic.SERVER_NAME);
-                return null;
+            protected Task createTask() {
+                return new Task() {
+                    @Override
+                    protected Object call() throws Exception {
+                        Registry registry = Network.getRegistry();
+                        server = (Server) registry.lookup(ServerGraphic.SERVER_NAME);
+                        return null;
+                    }
+                };
             }
         };
-        try {
-            Server server = (Server)task.get(5, TimeUnit.SECONDS);
-            /*Platform.runLater(() -> {
-            try {
-            Registry registry = Network.getRegistry();
-            Server server = (Server) registry.lookup(ServerGraphic.SERVER_NAME);
-            //registry.rebind(nickname, (Client) client);
-            server.connect(nickname, (Client) client);
-            actuel.close();
-            Stage stage = new Stage();
-            stage.setScene(scene);
-            client.actionConnect(nickname, server);
-            stage.setTitle(APPLICATION_NAME);
-            stage.show();
-            } catch (RemoteException | NotBoundException ex) {
-            Logger.getLogger(ClientConnectionController.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            });*/
-        } catch (InterruptedException | ExecutionException | TimeoutException ex) {
-            //Logger.getLogger(ClientConnectionController.class.getName()).log(Level.SEVERE, null, ex);
-            Platform.runLater(() -> {
-                labResultConnection.setText("Exception 5S");
-            });
-        }
+
+        animation.setOnFinished((ActionEvent event1) -> {
+            labResultConnection.setText("TimeOut -> Don't able to connect");
+            service.cancel();
+        });
+        service.setOnSucceeded((Event event1) -> {
+            animation.stop();
+            connectionProgress.setProgress(1f);
+            labResultConnection.setText("Connected ! ");
+            connectServer(nickname);
+        });
+        service.setOnRunning((Event event1) -> {
+            labResultConnection.setText("Trying to connect ... ");
+        });
+
+        animation.play();
+        service.start();
     }
 
     public void setClient(ClientGraphic client) {
