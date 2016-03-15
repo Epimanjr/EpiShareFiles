@@ -29,6 +29,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -100,10 +101,18 @@ public class ClientGraphic extends AbstractClient implements Initializable {
                     chatBoxContainer.layout();
                     chatBoxContainer.setVvalue(1.0f);
                 }));
-        //textContainer.setContent(text);
-        /*ClientConsole client = new ClientConsole();
-            registry.rebind(name, (Client) client);
-            server.connect(name);*/
+
+        // For private message
+        listUsers.setOnMouseClicked((MouseEvent mouseEvent) -> {
+            if (mouseEvent.getButton().equals(MouseButton.PRIMARY)) {
+                if (mouseEvent.getClickCount() == 2) {
+                    if (!tfMessage.getText().startsWith("@")) {
+                        tfMessage.setText("@" + listUsers.getSelectionModel().getSelectedItem().toString() + " " + tfMessage.getText());
+                    }
+                }
+            }
+        });
+
     }
 
     public void actionDownload(ActionEvent event) {

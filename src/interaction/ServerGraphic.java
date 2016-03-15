@@ -5,17 +5,10 @@
  */
 package interaction;
 
-import graphic.LaunchServer;
-import interaction.Network;
-import interaction.Server;
-import interaction.ServerConsole;
-import interaction.ServerGraphic;
 import java.io.File;
 import java.net.URL;
-import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -65,6 +58,8 @@ public class ServerGraphic extends AbstractServer implements Initializable {
 
     /**
      * Initializes the controller class.
+     * @param url .
+     * @param rb .
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -75,17 +70,28 @@ public class ServerGraphic extends AbstractServer implements Initializable {
                     chatBoxContainer.layout();
                     chatBoxContainer.setVvalue(1.0f);
                 }));
+        
+        try {
+            // Show ip
+            receiveMessage(new Message("Adresse IP = " + getServerHostName(), SERVER_NAME));
+        } catch (RemoteException ex) {
+            Logger.getLogger(ServerGraphic.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         // Send infos to clients
         Timeline timeline1 = new Timeline();
         timeline1.getKeyFrames().add(new KeyFrame(Duration.millis(5000), (ActionEvent actionEvent) -> {
-            getListClients().stream().forEach((str) -> {
-                try {
-                    Client client = (Client) Network.getRegistry().lookup(str);
-                    client.setInfosServer();
-                } catch (RemoteException | NotBoundException ex) {
-                    Logger.getLogger(ServerGraphic.class.getName()).log(Level.SEVERE, null, ex);
-                }
+            Platform.runLater(() -> {
+                getListClients().stream().forEach((str) -> {
+                    try {
+                        Client client = (Client) Network.getRegistry().lookup(str);
+                        client.setInfosServer();
+                    } catch (RemoteException | NotBoundException ex) {
+                        Logger.getLogger(ServerGraphic.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                });
             });
+
         }));
         timeline1.setCycleCount(Timeline.INDEFINITE);
         SequentialTransition animation = new SequentialTransition();
@@ -111,7 +117,7 @@ public class ServerGraphic extends AbstractServer implements Initializable {
         } else {
             Platform.runLater(() -> {
                 getChatBox().getChildren().add(textMessage);
-            });   
+            });
         }
     }
 

@@ -11,12 +11,14 @@
     <children>
         <Label fx:id="labServerStatus" layoutX="14.0" layoutY="14.0" prefHeight="34.0" prefWidth="394.0" textFill="#187235">
             <font>
-                <Font size="22.0" />
+                <Font size="16.0" />
             </font>
         </Label>
-        <ScrollPane fx:id="chatBoxContainer"  layoutX="14.0" layoutY="62.0" prefHeight="200.0" prefWidth="456.0">
-            <TextFlow fx:id="chatBox" layoutX="14.0" layoutY="62.0" prefHeight="180.0" prefWidth="436.0" />
+        <ScrollPane fx:id="chatBoxContainer" layoutX="14.0" layoutY="62.0" prefHeight="200.0" prefWidth="456.0">
+           <content>
+               <TextFlow fx:id="chatBox" layoutX="14.0" layoutY="62.0" prefHeight="180.0" prefWidth="436.0" />
+           </content>
         </ScrollPane>
-        <Button fx:id="butQuit" onAction="#actionQuit" layoutX="418.0" layoutY="19.0" mnemonicParsing="false" text="Quit" />
+        <Button fx:id="butQuit" layoutX="418.0" layoutY="19.0" mnemonicParsing="false" onAction="#actionQuit" text="Quit" />
     </children>
 </AnchorPane>

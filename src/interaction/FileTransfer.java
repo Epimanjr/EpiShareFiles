@@ -15,7 +15,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.application.Platform;
 
 /**
  *
@@ -42,10 +41,10 @@ public abstract class FileTransfer extends UnicastRemoteObject {
         // 0 = send ; 1 = receive
         String str = (sendOrReceive == 0) ? currentSenderName : currentTargetName;
 
-        Message message = new Message(content, currentSenderName, "#00ff00", 14);
+        
         try {
             ExchangeClient exchange = (ExchangeClient) Network.getRegistry().lookup(str);
-            exchange.receiveMessage(message);
+            sendFileTransferMessage(exchange, content, currentSenderName);
         } catch (NotBoundException | AccessException ex) {
             Logger.getLogger(FileTransfer.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RemoteException ex) {
@@ -72,7 +71,7 @@ public abstract class FileTransfer extends UnicastRemoteObject {
     public void receiveContentFile(ArrayList<byte[]> bytes, ArrayList<Integer> byteread) throws RemoteException, IOException {
         if (output != null) {
             for (int i = 0; i < bytes.size(); i++) {
-                output.write(bytes.get(i), 0, byteread.get(i).intValue());
+                output.write(bytes.get(i), 0, byteread.get(i));
             }
         } else {
             System.err.println("Error: OutputStream is null.");
@@ -107,35 +106,8 @@ public abstract class FileTransfer extends UnicastRemoteObject {
                 notifyStateTransfer(file, 0, 0);
                 // Send file
                 input = new FileInputStream(file);
+                sendFileHelper(client, file);
 
-                byte[] buf = new byte[1024];
-                int bytesRead;
-                ArrayList<byte[]> listBytes = new ArrayList<>();
-                ArrayList<Integer> listByteRead = new ArrayList<>();
-                int iterator = 1;
-
-                int numberOfState = ((int) (file.length() / 1024));
-                while ((bytesRead = input.read(buf)) > 0) {
-                    //client.receiveContentFile(buf, bytesRead);
-                    listBytes.add(buf);
-                    listByteRead.add(bytesRead);
-                    if (listBytes.size() > (numberOfState / 10)) {
-                        int percent = (iterator * 100) / numberOfState;
-                        int begin = ((iterator * 1024) / 1000);
-                        int end = ((int) (file.length() / 1000));
-                        if (begin <= end) {
-                            String messContent = begin + "Ko/" + end + "Ko => " + percent + "% / 100%";
-                            client.receiveMessage(new Message(messContent, senderName, "#00ff00", 14));
-                        }
-                        client.receiveContentFile(listBytes, listByteRead);
-                        listBytes = new ArrayList<>();
-                        listByteRead = new ArrayList<>();
-                    }
-                    iterator++;
-                }
-                if (!listBytes.isEmpty()) {
-                    client.receiveContentFile(listBytes, listByteRead);
-                }
                 input.close();
                 client.endReceiveFile();
                 notifyStateTransfer(file, 0, 1);
@@ -144,6 +116,35 @@ public abstract class FileTransfer extends UnicastRemoteObject {
             }
 
         } catch (NotBoundException | AccessException | FileNotFoundException ex) {
+            Logger.getLogger(FileTransfer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void sendFileHelper(ExchangeClient client, File file) throws RemoteException {
+        try {
+            int bufferSize = 65536;
+            byte[] buf = new byte[bufferSize];
+            int bytesRead;
+            int totalState = ((int) (file.length() / bufferSize))+1;
+            int it = 1;
+            while ((bytesRead = input.read(buf)) > 0) {
+                client.receiveContentFile(buf, bytesRead);
+                int percent = (it * 100) / totalState;
+                int totalBytesRead = ((it-1) * bufferSize) + bytesRead;
+                String content = totalBytesRead / 1000 + "/" + file.length() / 1000 + "KO => " + percent + "%";
+                sendFileTransferMessage(client,content , currentSenderName);
+                it++;
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(FileTransfer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    private void sendFileTransferMessage(ExchangeClient client, String content, String senderName) {
+        Message message = new Message(content, senderName, "#00ff00", 14);
+        try {
+            client.receiveMessage(message);
+        } catch (RemoteException ex) {
             Logger.getLogger(FileTransfer.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
