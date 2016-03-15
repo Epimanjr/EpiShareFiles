@@ -6,7 +6,6 @@
 package interaction;
 
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 
 /**
  *
@@ -15,9 +14,10 @@ import java.rmi.server.UnicastRemoteObject;
  */
 public abstract class AbstractClient extends FileTransfer implements Client {
 
-    
     public AbstractClient() throws RemoteException {
     }
 
-    
+    @Override
+    public abstract void disconnect() throws RemoteException;
+
 }

@@ -1,10 +1,8 @@
 package interaction;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -63,6 +61,11 @@ public class ClientConsole extends AbstractClient {
 
     @Override
     public void setInfosServer() throws RemoteException {
+    }
+
+    @Override
+    public void disconnect() throws RemoteException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

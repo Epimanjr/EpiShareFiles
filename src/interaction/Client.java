@@ -10,4 +10,6 @@ import java.rmi.RemoteException;
 public interface Client extends ExchangeClient {
     
     public abstract void setInfosServer() throws RemoteException;
+    
+    public abstract void disconnect() throws RemoteException;
 }

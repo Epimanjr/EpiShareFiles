@@ -123,10 +123,8 @@ public class ClientConnectionController implements Initializable {
         // Lors de la fermeture
         stage.setOnCloseRequest((WindowEvent event) -> {
             try {
-                server.disconnect(nickname);
+                client.disconnect();
             } catch (RemoteException ex) {
-                Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
-            } finally {
                 System.exit(0);
             }
         });
