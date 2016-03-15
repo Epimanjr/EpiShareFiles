@@ -34,7 +34,7 @@ public abstract class FileTransfer extends UnicastRemoteObject {
     public void notifyStateTransfer(File file, int sendOrReceive, int state) {
         String content = "File Transfer Complete";
         if (state == 0) {
-            content = (sendOrReceive == 1) ? "Receiving " + file.getName() + " from " + currentTargetName + " ... " : "Send " + file.getName() + " to " + currentSenderName + " ... ";
+            content = (sendOrReceive == 1) ? "Receiving " + file.getName() + " from " + currentSenderName + " ... " : "Send " + file.getName() + " to " + currentTargetName + " ... ";
         }
 
         // 0 = send ; 1 = receive
@@ -60,6 +60,7 @@ public abstract class FileTransfer extends UnicastRemoteObject {
     public void beginReceiveFile(String senderName, String targetName, File file) throws RemoteException, FileNotFoundException {
         output = new FileOutputStream(targetName + "/" + file.getName());
         currentTargetName = targetName;
+        currentSenderName = senderName;
         notifyStateTransfer(file, 1, 0);
     }
 
@@ -84,6 +85,7 @@ public abstract class FileTransfer extends UnicastRemoteObject {
     public void sendFile(String senderName, String targetName, File file) throws RemoteException {
         Registry registry = Network.getRegistry();
         currentSenderName = senderName;
+        currentTargetName = targetName;
         try {
             // Get target client
             ExchangeClient client = (ExchangeClient) registry.lookup(targetName);

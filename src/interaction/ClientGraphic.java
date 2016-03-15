@@ -15,11 +15,16 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -39,6 +44,8 @@ public class ClientGraphic extends AbstractClient implements Initializable {
     private Label labConnectStatus;
     @FXML
     private TextField tfMessage;
+    @FXML
+    private Button butDownload;
 
     @FXML
     private ListView listUsers;
@@ -48,20 +55,58 @@ public class ClientGraphic extends AbstractClient implements Initializable {
     Server server = null;
     boolean connect = !false;
 
-    String currentNickname;
+    String currentNickname = "";
+
+    ArrayList<File> arraylistFiles = null;
 
     public ClientGraphic() throws RemoteException {
     }
 
     /**
      * Initializes the controller class.
+     *
+     * @param url .
+     * @param rb .
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        DropShadow shadow = new DropShadow();
+        shadow.setColor(Color.web("#0000ff"));
+        //Adding the shadow when the mouse cursor is on
+        butDownload.addEventHandler(MouseEvent.MOUSE_ENTERED, (MouseEvent e) -> {
+            butDownload.setEffect(shadow);
+        });
+        //Removing the shadow when the mouse cursor is off
+        butDownload.addEventHandler(MouseEvent.MOUSE_EXITED, (MouseEvent e) -> {
+            butDownload.setEffect(null);
+        });
 
+        listFiles.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         /*ClientConsole client = new ClientConsole();
             registry.rebind(name, (Client) client);
             server.connect(name);*/
+    }
+
+    public void actionDownload(ActionEvent event) {
+        //butDownload.set
+        Platform.runLater(() -> {
+            butDownload.setDisable(true);
+            butDownload.setText("Waiting ... ");
+        });
+
+        ArrayList<Integer> indices = new ArrayList<>(listFiles.getSelectionModel().getSelectedIndices());
+        indices.stream().forEach((Integer i) -> {
+            try {
+                server.askFile(currentNickname, arraylistFiles.get(i));
+            } catch (RemoteException ex) {
+                Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+        Platform.runLater(() -> {
+            butDownload.setText("Download");
+            butDownload.setDisable(false);
+        });
+
     }
 
     @FXML
@@ -73,7 +118,7 @@ public class ClientGraphic extends AbstractClient implements Initializable {
         } finally {
             System.exit(0);
         }
-        
+
     }
 
     public ClientGraphic returnThis() {
@@ -123,7 +168,8 @@ public class ClientGraphic extends AbstractClient implements Initializable {
                 listUsers.setItems(FXCollections.observableArrayList(listTmp));
                 // List files
                 ArrayList<String> nameFiles = new ArrayList<>();
-                server.askListFiles().stream().forEach((f) -> {
+                arraylistFiles = server.askListFiles();
+                arraylistFiles.stream().forEach((f) -> {
                     nameFiles.add(f.getName());
                 });
                 listFiles.setItems(FXCollections.observableArrayList(nameFiles));

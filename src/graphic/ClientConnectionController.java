@@ -6,6 +6,7 @@
 package graphic;
 
 import com.sun.javafx.perf.PerformanceTracker;
+import static graphic.LaunchClient.APPLICATION_NAME;
 import interaction.Client;
 import interaction.ClientGraphic;
 import interaction.Network;
@@ -68,6 +69,7 @@ public class ClientConnectionController implements Initializable {
                 Stage stage = new Stage();
                 stage.setScene(scene);
                 client.actionConnect(nickname, server);
+                stage.setTitle(APPLICATION_NAME);
                 stage.show();
             } catch (RemoteException | NotBoundException ex) {
                 Logger.getLogger(ClientConnectionController.class.getName()).log(Level.SEVERE, null, ex);

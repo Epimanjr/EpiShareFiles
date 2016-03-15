@@ -22,6 +22,6 @@
       <ListView fx:id="listUsers" layoutX="425.0" layoutY="57.0" prefHeight="79.0" prefWidth="161.0" />
       <Label fx:id="labClientsConnected" layoutX="425.0" layoutY="36.0" prefHeight="17.0" prefWidth="149.0" text="X clients connected" />
       <Label fx:id="labFiles" layoutX="425.0" layoutY="144.0" prefHeight="17.0" prefWidth="149.0" text="Files list" />
-      <Button layoutX="426.0" layoutY="296.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="161.0" text="Download" />
+      <Button fx:id="butDownload" onAction="#actionDownload" layoutX="426.0" layoutY="296.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="161.0" text="Download" />
     </children>
 </AnchorPane>

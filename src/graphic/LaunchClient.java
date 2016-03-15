@@ -15,6 +15,8 @@ import javafx.stage.Stage;
  */
 public class LaunchClient extends Application  {
     
+    public static final String APPLICATION_NAME = "mShisKus 2.0";
+    
     @Override
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ClientConnection.fxml"));
@@ -36,6 +38,7 @@ public class LaunchClient extends Application  {
         controleur.setStage(primaryStage);
         
         primaryStage.setScene(scene);
+        primaryStage.setTitle(APPLICATION_NAME);
         primaryStage.show();
     }
     

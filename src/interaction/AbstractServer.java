@@ -102,6 +102,11 @@ public abstract class AbstractServer extends FileTransfer implements Server {
         list.addAll(Arrays.asList(file.listFiles()));
         return list;
     }
+    
+    @Override
+    public void askFile(String askerName, File file) throws RemoteException {
+        sendFile(folderName, askerName, file);
+    }
 
     public String getFolderName() {
         return folderName;
