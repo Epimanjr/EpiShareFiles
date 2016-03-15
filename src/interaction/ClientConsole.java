@@ -38,8 +38,8 @@ public class ClientConsole extends AbstractClient {
             Scanner sc = new Scanner(System.in);
             String name = askName(sc);
             ClientConsole client = new ClientConsole();
-            registry.rebind(name, (Client) client);
-            server.connect(name);
+            //registry.rebind(name, (Client) client);
+            server.connect(name, client);
             // 
             client.sendFile(name, ServerConsole.SERVER_NAME, new File("test.pdf"));
             server.sendFileToAll(name, new File("test.pdf"));

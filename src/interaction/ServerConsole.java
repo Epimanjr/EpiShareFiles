@@ -42,7 +42,7 @@ public class ServerConsole extends AbstractServer {
     }
 
     @Override
-    public void notificationForServer(Message message) {
+    public void receiveMessage(Message message) {
         System.out.println(message.getNameSender() + "-> " + message.getContent());
     }
     

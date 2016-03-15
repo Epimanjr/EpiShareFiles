@@ -12,8 +12,10 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 
 /**
  *
@@ -40,15 +42,10 @@ public abstract class FileTransfer extends UnicastRemoteObject {
         // 0 = send ; 1 = receive
         String str = (sendOrReceive == 0) ? currentSenderName : currentTargetName;
 
-        Message message = new Message(content, str, "#00ff00", 14);
+        Message message = new Message(content, currentSenderName, "#00ff00", 14);
         try {
-            if (str.equals(ServerGraphic.SERVER_NAME) || str.equals(ServerConsole.SERVER_NAME)) {
-                Server server = (Server) Network.getRegistry().lookup(str);
-                server.notificationForServer(message);
-            } else {
-                Client client = (Client) Network.getRegistry().lookup(str);
-                client.receiveMessage(message);
-            }
+            ExchangeClient exchange = (ExchangeClient) Network.getRegistry().lookup(str);
+            exchange.receiveMessage(message);
         } catch (NotBoundException | AccessException ex) {
             Logger.getLogger(FileTransfer.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RemoteException ex) {
@@ -72,6 +69,16 @@ public abstract class FileTransfer extends UnicastRemoteObject {
         }
     }
 
+    public void receiveContentFile(ArrayList<byte[]> bytes, ArrayList<Integer> byteread) throws RemoteException, IOException {
+        if (output != null) {
+            for (int i = 0; i < bytes.size(); i++) {
+                output.write(bytes.get(i), 0, byteread.get(i).intValue());
+            }
+        } else {
+            System.err.println("Error: OutputStream is null.");
+        }
+    }
+
     public void endReceiveFile() throws RemoteException, IOException {
         if (output != null) {
             output.close();
@@ -81,7 +88,7 @@ public abstract class FileTransfer extends UnicastRemoteObject {
             System.err.println("Error: OutputStream is null.");
         }
     }
-    
+
     public void sendFile(String senderName, String targetName, File file) throws RemoteException {
         sendFile(senderName, targetName, file, targetName);
     }
@@ -94,15 +101,40 @@ public abstract class FileTransfer extends UnicastRemoteObject {
             // Get target client
             ExchangeClient client = (ExchangeClient) registry.lookup(targetName);
             client.beginReceiveFile(senderName, targetName, file, pathToSave);
+            client.receiveMessage(new Message("File size : " + ((int) (file.length() / 1000)) + "Ko", senderName, "#00ff00", 14));
 
             try {
                 notifyStateTransfer(file, 0, 0);
                 // Send file
                 input = new FileInputStream(file);
+
                 byte[] buf = new byte[1024];
                 int bytesRead;
+                ArrayList<byte[]> listBytes = new ArrayList<>();
+                ArrayList<Integer> listByteRead = new ArrayList<>();
+                int iterator = 1;
+
+                int numberOfState = ((int) (file.length() / 1024));
                 while ((bytesRead = input.read(buf)) > 0) {
-                    client.receiveContentFile(buf, bytesRead);
+                    //client.receiveContentFile(buf, bytesRead);
+                    listBytes.add(buf);
+                    listByteRead.add(bytesRead);
+                    if (listBytes.size() > (numberOfState / 10)) {
+                        int percent = (iterator * 100) / numberOfState;
+                        int begin = ((iterator * 1024) / 1000);
+                        int end = ((int) (file.length() / 1000));
+                        if (begin <= end) {
+                            String messContent = begin + "Ko/" + end + "Ko => " + percent + "% / 100%";
+                            client.receiveMessage(new Message(messContent, senderName, "#00ff00", 14));
+                        }
+                        client.receiveContentFile(listBytes, listByteRead);
+                        listBytes = new ArrayList<>();
+                        listByteRead = new ArrayList<>();
+                    }
+                    iterator++;
+                }
+                if (!listBytes.isEmpty()) {
+                    client.receiveContentFile(listBytes, listByteRead);
                 }
                 input.close();
                 client.endReceiveFile();

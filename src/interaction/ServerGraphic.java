@@ -24,11 +24,14 @@ import javafx.animation.KeyFrame;
 import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -53,6 +56,8 @@ public class ServerGraphic extends AbstractServer implements Initializable {
     private Button butQuit;
     @FXML
     private TextFlow chatBox;
+    @FXML
+    private ScrollPane chatBoxContainer;
 
     public ServerGraphic() throws RemoteException {
         setFolderName("ServerGraphic");
@@ -63,6 +68,14 @@ public class ServerGraphic extends AbstractServer implements Initializable {
      */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        // For auto-scroll
+        chatBox.getChildren().addListener(
+                (ListChangeListener<Node>) ((change) -> {
+                    chatBox.layout();
+                    chatBoxContainer.layout();
+                    chatBoxContainer.setVvalue(1.0f);
+                }));
+        // Send infos to clients
         Timeline timeline1 = new Timeline();
         timeline1.getKeyFrames().add(new KeyFrame(Duration.millis(5000), (ActionEvent actionEvent) -> {
             getListClients().stream().forEach((str) -> {
@@ -89,7 +102,7 @@ public class ServerGraphic extends AbstractServer implements Initializable {
     }
 
     @Override
-    public void notificationForServer(Message message) throws RemoteException {
+    public void receiveMessage(Message message) throws RemoteException {
         Text textMessage = new Text(message.getNameSender() + "-> " + message.getContent() + "\n");
         textMessage.setFont(new Font(message.getFont()));
         textMessage.setFill(Color.web(message.getColor()));

@@ -24,9 +24,10 @@ public interface Server extends ExchangeClient {
      * Connect to the server.
      *
      * @param nameClient Name of the client who wants to connect to the server.
+     * @param client Client Interface
      * @throws RemoteException .
      */
-    public abstract void connect(String nameClient) throws RemoteException;
+    public abstract void connect(String nameClient, Client client) throws RemoteException;
     
     /**
      * Disconnect to the server.
@@ -37,8 +38,6 @@ public interface Server extends ExchangeClient {
     public abstract void disconnect(String nameClient) throws RemoteException;
 
     public abstract void sendFileToAll(String senderName, File file) throws RemoteException;
-
-    public abstract void notificationForServer(Message message) throws RemoteException;
 
     public abstract ArrayList<String> askListConnectedUsers() throws RemoteException;
     

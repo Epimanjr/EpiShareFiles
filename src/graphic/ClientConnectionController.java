@@ -39,6 +39,8 @@ public class ClientConnectionController implements Initializable {
     private TextField tfHostname;
     @FXML
     private TextField tfNickname;
+    @FXML
+    private TextField tfPort;
 
     ClientGraphic client = null;
     Scene scene = null;
@@ -55,7 +57,7 @@ public class ClientConnectionController implements Initializable {
     public void actionQuit(ActionEvent event) {
         System.exit(0);
     }
-    
+
     @FXML
     public void actionConnect(ActionEvent event) {
         // Get values
@@ -63,12 +65,17 @@ public class ClientConnectionController implements Initializable {
         String nickname = tfNickname.getText();
         // Connection
         Network.hostname = hostname;
+        try {
+            Network.port = new Integer(tfPort.getText());
+        } catch (Exception e) {
+            Network.port = 3212;
+        }
         Platform.runLater(() -> {
             try {
                 Registry registry = Network.getRegistry();
                 Server server = (Server) registry.lookup(ServerGraphic.SERVER_NAME);
-                registry.rebind(nickname, (Client) client);
-                server.connect(nickname);
+                //registry.rebind(nickname, (Client) client);
+                server.connect(nickname, (Client)client);
                 actuel.close();
                 Stage stage = new Stage();
                 stage.setScene(scene);
@@ -88,7 +95,7 @@ public class ClientConnectionController implements Initializable {
     void setScene(Scene scene2) {
         this.scene = scene2;
     }
-    
+
     void setStage(Stage stage) {
         this.actuel = stage;
     }

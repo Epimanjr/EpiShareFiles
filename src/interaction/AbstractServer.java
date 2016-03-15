@@ -69,7 +69,7 @@ public abstract class AbstractServer extends FileTransfer implements Server {
     
     @Override
     public void sendMessage(Message message) throws RemoteException {
-        notificationForServer(message);
+        receiveMessage(message);
         Registry registry = LocateRegistry.getRegistry(3212);
         // Clients loop
         for(String str : this.getListClients()) {
@@ -85,7 +85,8 @@ public abstract class AbstractServer extends FileTransfer implements Server {
    
 
     @Override
-    public void connect(String nameClient) throws RemoteException {   
+    public void connect(String nameClient, Client client) throws RemoteException {   
+        Network.getRegistry().rebind(nameClient, client);
         this.addClient(nameClient);
         this.sendMessage(new Message(nameClient + " is now connected.", ServerConsole.SERVER_NAME));
     }

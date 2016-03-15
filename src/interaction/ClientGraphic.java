@@ -14,13 +14,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
@@ -49,6 +54,8 @@ public class ClientGraphic extends AbstractClient implements Initializable {
     private TextField tfMessage;
     @FXML
     private Button butDownload;
+    @FXML
+    private ScrollPane chatBoxContainer;
 
     @FXML
     private ListView listUsers;
@@ -85,6 +92,15 @@ public class ClientGraphic extends AbstractClient implements Initializable {
         });
 
         listFiles.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+        // For auto-scroll
+        chatBox.getChildren().addListener(
+                (ListChangeListener<Node>) ((change) -> {
+                    chatBox.layout();
+                    chatBoxContainer.layout();
+                    chatBoxContainer.setVvalue(1.0f);
+                }));
+        //textContainer.setContent(text);
         /*ClientConsole client = new ClientConsole();
             registry.rebind(name, (Client) client);
             server.connect(name);*/
@@ -103,13 +119,27 @@ public class ClientGraphic extends AbstractClient implements Initializable {
         String pathToSave = (selectedDirectory != null) ? selectedDirectory.getAbsolutePath() : "";
 
         ArrayList<Integer> indices = new ArrayList<>(listFiles.getSelectionModel().getSelectedIndices());
-        indices.stream().forEach((Integer i) -> {
-            try {
-                server.askFile(currentNickname, arraylistFiles.get(i), pathToSave);
-            } catch (RemoteException ex) {
-                Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
+        Service service = new Service() {
+            @Override
+            protected Task createTask() {
+                return new Task<Void>() {
+                    @Override
+                    public Void call() {
+                        indices.stream().forEach((Integer i) -> {
+                            try {
+                                server.askFile(currentNickname, arraylistFiles.get(i), pathToSave);
+                            } catch (RemoteException ex) {
+                                Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        });
+
+                        return null;
+                    }
+                };
             }
-        });
+        };
+        service.start();
+
         Platform.runLater(() -> {
             butDownload.setText("Download");
             butDownload.setDisable(false);
@@ -137,6 +167,7 @@ public class ClientGraphic extends AbstractClient implements Initializable {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open the file to send");
         File file = fileChooser.showOpenDialog(null);
+
         try {
             sendFile(currentNickname, ServerGraphic.SERVER_NAME, file);
             //server.sendFileToAll(currentNickname, file);
