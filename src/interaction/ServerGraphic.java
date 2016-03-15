@@ -46,8 +46,6 @@ public class ServerGraphic extends AbstractServer implements Initializable {
     @FXML
     private Label labServerStatus;
     @FXML
-    private Button butQuit;
-    @FXML
     private TextFlow chatBox;
     @FXML
     private ScrollPane chatBoxContainer;
@@ -97,10 +95,6 @@ public class ServerGraphic extends AbstractServer implements Initializable {
         SequentialTransition animation = new SequentialTransition();
         animation.getChildren().addAll(timeline1);
         animation.play();
-    }
-
-    public void actionQuit(ActionEvent event) {
-        System.exit(0);
     }
 
     public void setTextToLabel(String message) {

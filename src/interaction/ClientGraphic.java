@@ -21,6 +21,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -29,6 +30,8 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -91,6 +94,9 @@ public class ClientGraphic extends AbstractClient implements Initializable {
         butDownload.addEventHandler(MouseEvent.MOUSE_EXITED, (MouseEvent e) -> {
             butDownload.setEffect(null);
         });
+        Image imageDecline = new Image(getClass().getResourceAsStream("dl.png"), 20, 20, true, true);
+        butDownload.setPadding(new Insets(0));
+        butDownload.setGraphic(new ImageView(imageDecline));
 
         listFiles.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
@@ -156,17 +162,6 @@ public class ClientGraphic extends AbstractClient implements Initializable {
 
     }
 
-    @FXML
-    public void actionQuit(ActionEvent event) {
-        try {
-            server.disconnect(currentNickname);
-        } catch (RemoteException ex) {
-            Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            System.exit(0);
-        }
-
-    }
 
     public ClientGraphic returnThis() {
         return this;

@@ -4,10 +4,12 @@ package graphic;
 import interaction.ClientGraphic;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 /**
  *
@@ -38,6 +40,9 @@ public class LaunchClient extends Application  {
         controleur.setStage(primaryStage);
         
         primaryStage.setScene(scene);
+        primaryStage.setOnCloseRequest((WindowEvent event) -> {
+            System.exit(0);
+        });
         primaryStage.setTitle(APPLICATION_NAME);
         primaryStage.show();
     }

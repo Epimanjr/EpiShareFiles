@@ -38,6 +38,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
 /**
@@ -79,10 +80,6 @@ public class ClientConnectionController implements Initializable {
         // TODO
     }
 
-    public void actionQuit(ActionEvent event) {
-        System.exit(0);
-    }
-
     @FXML
     public void actionConnect(ActionEvent event) {
         // Get values
@@ -115,14 +112,24 @@ public class ClientConnectionController implements Initializable {
         }
         });*/
     }
-    
+
     private void launchClientGUI(String nickname) {
         Stage stage = new Stage();
         stage.setScene(scene);
         client.actionConnect(nickname, server);
         stage.setTitle(APPLICATION_NAME);
-        
+
         actuel.close();
+        // Lors de la fermeture
+        stage.setOnCloseRequest((WindowEvent event) -> {
+            try {
+                server.disconnect(nickname);
+            } catch (RemoteException ex) {
+                Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
+            } finally {
+                System.exit(0);
+            }
+        });
         stage.show();
     }
 
@@ -172,7 +179,7 @@ public class ClientConnectionController implements Initializable {
             connectServer(nickname);
         });
         service.setOnRunning((Event event1) -> {
-            labResultConnection.setText("Trying to connect ... ");
+            labResultConnection.setText("Trying to contact server at " + Network.hostname + " ... ");
         });
 
         animation.play();

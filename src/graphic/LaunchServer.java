@@ -1,5 +1,6 @@
 package graphic;
 
+import interaction.Message;
 import interaction.Network;
 import interaction.Server;
 import interaction.ServerGraphic;
@@ -8,10 +9,13 @@ import java.rmi.registry.Registry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 /**
  *
@@ -44,6 +48,14 @@ public class LaunchServer extends Application {
         }
 
         primaryStage.setScene(scene);
+        primaryStage.setOnCloseRequest((WindowEvent event) -> {
+            try {
+                controleur.sendMessage(new Message("Oh no, server quit.", controleur.getFolderName(), "#E80C82", 16));
+            } catch (RemoteException ex) {
+                Logger.getLogger(LaunchServer.class.getName()).log(Level.SEVERE, null, ex);
+            } 
+            System.exit(0);
+        });
         primaryStage.setTitle(LaunchClient.APPLICATION_NAME + " Server");
         primaryStage.show();
     }

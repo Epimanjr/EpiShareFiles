@@ -16,12 +16,11 @@
         </ScrollPane>
         <TextField fx:id="tfMessage" layoutX="34.0" layoutY="334.0" onAction="#actionSendMessage" prefHeight="25.0" prefWidth="552.0" />
         <Label fx:id="labConnectStatus" layoutX="371.0" layoutY="6.0" prefHeight="17.0" prefWidth="161.0" text="Not Connected Yet." textAlignment="RIGHT" />
-        <Button fx:id="butQuit" layoutX="541.0" layoutY="2.0" mnemonicParsing="false" onAction="#actionQuit" text="Quit" />
       <Button fx:id="butSendFile" layoutX="34.0" layoutY="23.0" mnemonicParsing="false" onAction="#actionSendFile" prefHeight="25.0" prefWidth="149.0" text="Send a file" />
       <ListView fx:id="listFiles" layoutX="425.0" layoutY="167.0" prefHeight="123.0" prefWidth="161.0" />
       <ListView fx:id="listUsers" layoutX="425.0" layoutY="57.0" prefHeight="79.0" prefWidth="161.0" />
       <Label fx:id="labClientsConnected" layoutX="425.0" layoutY="36.0" prefHeight="17.0" prefWidth="149.0" text="X clients connected" />
       <Label fx:id="labFiles" layoutX="425.0" layoutY="144.0" prefHeight="17.0" prefWidth="149.0" text="Files list" />
-      <Button fx:id="butDownload" onAction="#actionDownload" layoutX="426.0" layoutY="296.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="161.0" text="Download" />
+      <Button fx:id="butDownload" layoutX="426.0" layoutY="296.0" mnemonicParsing="false" onAction="#actionDownload" prefHeight="25.0" prefWidth="161.0" text="Download" />
     </children>
 </AnchorPane>
