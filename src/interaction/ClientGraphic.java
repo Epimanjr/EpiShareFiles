@@ -29,6 +29,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
 /**
@@ -42,6 +43,8 @@ public class ClientGraphic extends AbstractClient implements Initializable {
     private TextFlow chatBox;
     @FXML
     private Label labConnectStatus;
+    @FXML
+    private Label labClientsConnected;
     @FXML
     private TextField tfMessage;
     @FXML
@@ -94,10 +97,15 @@ public class ClientGraphic extends AbstractClient implements Initializable {
             butDownload.setText("Waiting ... ");
         });
 
+        // Choose folder
+        final DirectoryChooser directoryChooser = new DirectoryChooser();
+        final File selectedDirectory = directoryChooser.showDialog(null);
+        String pathToSave = (selectedDirectory != null) ? selectedDirectory.getAbsolutePath() : "";
+
         ArrayList<Integer> indices = new ArrayList<>(listFiles.getSelectionModel().getSelectedIndices());
         indices.stream().forEach((Integer i) -> {
             try {
-                server.askFile(currentNickname, arraylistFiles.get(i));
+                server.askFile(currentNickname, arraylistFiles.get(i), pathToSave);
             } catch (RemoteException ex) {
                 Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -166,6 +174,7 @@ public class ClientGraphic extends AbstractClient implements Initializable {
                 // List users
                 ArrayList<String> listTmp = server.askListConnectedUsers();
                 listUsers.setItems(FXCollections.observableArrayList(listTmp));
+                labClientsConnected.setText(listTmp.size() + " client(s) connected.");
                 // List files
                 ArrayList<String> nameFiles = new ArrayList<>();
                 arraylistFiles = server.askListFiles();

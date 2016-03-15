@@ -52,6 +52,10 @@ public class ClientConnectionController implements Initializable {
         // TODO
     }
 
+    public void actionQuit(ActionEvent event) {
+        System.exit(0);
+    }
+    
     @FXML
     public void actionConnect(ActionEvent event) {
         // Get values

@@ -57,8 +57,8 @@ public abstract class FileTransfer extends UnicastRemoteObject {
 
     }
 
-    public void beginReceiveFile(String senderName, String targetName, File file) throws RemoteException, FileNotFoundException {
-        output = new FileOutputStream(targetName + "/" + file.getName());
+    public void beginReceiveFile(String senderName, String targetName, File file, String pathToSave) throws RemoteException, FileNotFoundException {
+        output = new FileOutputStream(pathToSave + "/" + file.getName());
         currentTargetName = targetName;
         currentSenderName = senderName;
         notifyStateTransfer(file, 1, 0);
@@ -81,15 +81,19 @@ public abstract class FileTransfer extends UnicastRemoteObject {
             System.err.println("Error: OutputStream is null.");
         }
     }
-
+    
     public void sendFile(String senderName, String targetName, File file) throws RemoteException {
+        sendFile(senderName, targetName, file, targetName);
+    }
+
+    public void sendFile(String senderName, String targetName, File file, String pathToSave) throws RemoteException {
         Registry registry = Network.getRegistry();
         currentSenderName = senderName;
         currentTargetName = targetName;
         try {
             // Get target client
             ExchangeClient client = (ExchangeClient) registry.lookup(targetName);
-            client.beginReceiveFile(senderName, targetName, file);
+            client.beginReceiveFile(senderName, targetName, file, pathToSave);
 
             try {
                 notifyStateTransfer(file, 0, 0);

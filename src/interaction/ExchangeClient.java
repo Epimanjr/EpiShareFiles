@@ -14,7 +14,7 @@ import java.rmi.RemoteException;
  */
 public interface ExchangeClient extends Remote {
     
-    public abstract void beginReceiveFile(String senderName, String targetName, File file) throws RemoteException, FileNotFoundException;
+    public abstract void beginReceiveFile(String senderName, String targetName, File file, String pathToSave) throws RemoteException, FileNotFoundException;
 
     public abstract void receiveContentFile(byte[] buf, int bytesRead) throws RemoteException, IOException;
 

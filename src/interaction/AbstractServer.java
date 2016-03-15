@@ -104,8 +104,8 @@ public abstract class AbstractServer extends FileTransfer implements Server {
     }
     
     @Override
-    public void askFile(String askerName, File file) throws RemoteException {
-        sendFile(folderName, askerName, file);
+    public void askFile(String askerName, File file, String pathToSave) throws RemoteException {
+        sendFile(folderName, askerName, file, pathToSave);
     }
 
     public String getFolderName() {

@@ -44,5 +44,5 @@ public interface Server extends ExchangeClient {
     
     public ArrayList<File> askListFiles() throws RemoteException;
 
-    public abstract void askFile(String askerName, File file) throws RemoteException;
+    public abstract void askFile(String askerName, File file, String pathToSave) throws RemoteException;
 }
