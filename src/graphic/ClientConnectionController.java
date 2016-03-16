@@ -34,6 +34,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextField;
@@ -54,6 +55,9 @@ public class ClientConnectionController implements Initializable {
     private TextField tfNickname;
     @FXML
     private TextField tfPort;
+
+    @FXML
+    private Button butConnect;
 
     @FXML
     private Label labResultConnection;
@@ -128,6 +132,7 @@ public class ClientConnectionController implements Initializable {
                 System.exit(0);
             }
         });
+        stage.setResizable(false);
         stage.show();
     }
 
@@ -142,17 +147,44 @@ public class ClientConnectionController implements Initializable {
     }
 
     private void contactServer(String nickname) {
+        Service service = forContactServer();
+        SequentialTransition animation = createAnimation(5000, 100);
+        animation.setOnFinished((ActionEvent event1) -> {
+            labResultConnection.setText("TimeOut -> Don't able to connect");
+            service.cancel();
+            activeButConnect();
+        });
+        service.setOnSucceeded((Event event1) -> {
+            animation.stop();
+            connectionProgress.setProgress(1f);
+            labResultConnection.setText("Connected ! ");
+            connectServer(nickname);
+        });
+        service.setOnRunning((Event event1) -> {
+            labResultConnection.setText("Trying to contact server at " + Network.hostname + " ... ");
+        });
+
+        desactiveButConnect();
+        animation.play();
+        service.start();
+    }
+    
+    private SequentialTransition createAnimation(int totalMillis, int duration) {
         Timeline timeline1 = new Timeline();
-        progressValue = 0.02f;
-        timeline1.getKeyFrames().add(new KeyFrame(Duration.millis(100), (ActionEvent actionEvent) -> {
+        float pas = 1.0f / (totalMillis / duration);
+        progressValue = pas;
+        timeline1.getKeyFrames().add(new KeyFrame(Duration.millis(duration), (ActionEvent actionEvent) -> {
             connectionProgress.setProgress(progressValue);
-            progressValue += 0.02f;
+            progressValue += pas;
         }));
-        timeline1.setCycleCount(50);
+        timeline1.setCycleCount(totalMillis / duration);
         SequentialTransition animation = new SequentialTransition();
         animation.getChildren().addAll(timeline1);
+        return animation;
+    }
 
-        Service service = new Service() {
+    private Service forContactServer() {
+        return new Service() {
             @Override
             protected Task createTask() {
                 return new Task() {
@@ -165,23 +197,20 @@ public class ClientConnectionController implements Initializable {
                 };
             }
         };
+    }
 
-        animation.setOnFinished((ActionEvent event1) -> {
-            labResultConnection.setText("TimeOut -> Don't able to connect");
-            service.cancel();
-        });
-        service.setOnSucceeded((Event event1) -> {
-            animation.stop();
-            connectionProgress.setProgress(1f);
-            labResultConnection.setText("Connected ! ");
-            connectServer(nickname);
-        });
-        service.setOnRunning((Event event1) -> {
-            labResultConnection.setText("Trying to contact server at " + Network.hostname + " ... ");
-        });
+    private void activeButConnect() {
+        changeStateButConnect(true);
+    }
 
-        animation.play();
-        service.start();
+    private void desactiveButConnect() {
+        changeStateButConnect(false);
+    }
+
+    private void changeStateButConnect(boolean active) {
+        butConnect.setDisable(!active);
+        String textButton = (active) ? "Connect" : "Waiting ...";
+        butConnect.setText(textButton);
     }
 
     public void setClient(ClientGraphic client) {

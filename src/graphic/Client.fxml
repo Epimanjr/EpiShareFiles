@@ -11,7 +11,7 @@
     <children>
         <ScrollPane fx:id="chatBoxContainer" layoutX="34.0" layoutY="57.0" prefHeight="264.0" prefWidth="376.0">
            <content>
-               <TextFlow fx:id="chatBox" layoutX="34.0" layoutY="57.0" prefHeight="253.0" prefWidth="374.0" />
+               <TextFlow fx:id="chatBox" layoutX="34.0" layoutY="57.0" prefHeight="247.0" prefWidth="360.0" />
            </content>
         </ScrollPane>
         <TextField fx:id="tfMessage" layoutX="34.0" layoutY="334.0" onAction="#actionSendMessage" prefHeight="25.0" prefWidth="552.0" />

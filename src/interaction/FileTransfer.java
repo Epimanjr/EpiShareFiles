@@ -15,6 +15,14 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.animation.KeyFrame;
+import javafx.animation.SequentialTransition;
+import javafx.animation.Timeline;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.util.Duration;
 
 /**
  *
@@ -25,9 +33,9 @@ public abstract class FileTransfer extends UnicastRemoteObject {
 
     InputStream input = null;
     OutputStream output = null;
-    boolean outputBusy = false;
     String currentTargetName = "";
     String currentSenderName = "";
+    ExchangeClient receiver = null;
 
     public FileTransfer() throws RemoteException {
     }
@@ -41,10 +49,9 @@ public abstract class FileTransfer extends UnicastRemoteObject {
         // 0 = send ; 1 = receive
         String str = (sendOrReceive == 0) ? currentSenderName : currentTargetName;
 
-        
         try {
             ExchangeClient exchange = (ExchangeClient) Network.getRegistry().lookup(str);
-            sendFileTransferMessage(exchange, content, currentSenderName);
+            sendFileTransferMessage(exchange, content);
         } catch (NotBoundException | AccessException ex) {
             Logger.getLogger(FileTransfer.class.getName()).log(Level.SEVERE, null, ex);
         } catch (RemoteException ex) {
@@ -93,55 +100,142 @@ public abstract class FileTransfer extends UnicastRemoteObject {
     }
 
     public void sendFile(String senderName, String targetName, File file, String pathToSave) throws RemoteException {
-        Registry registry = Network.getRegistry();
         currentSenderName = senderName;
         currentTargetName = targetName;
+
+        // File transfer prepare
+        Service service = contactReceiver();
+        SequentialTransition animation = createAnimation(5000, 5000);
+
+        animation.setOnFinished((ActionEvent event1) -> {
+            sendFileTransferMessage((ExchangeClient) this, "TimeOut: unable to contact the receiver.", true);
+            service.cancel();
+        });
+        service.setOnSucceeded((Event event1) -> {
+            animation.stop();
+            sendFileTransferMessage((ExchangeClient) this, "Connection with " + currentTargetName + " OK.");
+            try {
+                sendFileHelper(file, pathToSave);
+            } catch (RemoteException ex) {
+                Logger.getLogger(FileTransfer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+        service.setOnRunning((Event event1) -> {
+            animation.play();
+            sendFileTransferMessage((ExchangeClient) this, "Trying to connect with " + currentTargetName + " ... ");
+        });
+        service.start();
+    }
+
+    public static SequentialTransition createAnimation(int totalMillis, int duration) {
+        Timeline timeline1 = new Timeline();
+        timeline1.getKeyFrames().add(new KeyFrame(Duration.millis(duration), (ActionEvent actionEvent) -> {
+
+        }));
+        timeline1.setCycleCount(totalMillis / duration);
+        SequentialTransition animation = new SequentialTransition();
+        animation.getChildren().addAll(timeline1);
+        return animation;
+    }
+
+    private Service contactReceiver() {
+        return new Service() {
+            @Override
+            protected Task createTask() {
+                return new Task() {
+                    @Override
+                    protected Object call() throws Exception {
+                        Registry registry = Network.getRegistry();
+                        receiver = (ExchangeClient) registry.lookup(currentTargetName);
+                        return null;
+                    }
+                };
+            }
+        };
+    }
+
+    private void sendFileHelper(File file, String pathToSave) throws RemoteException {
         try {
-            // Get target client
-            ExchangeClient client = (ExchangeClient) registry.lookup(targetName);
-            client.beginReceiveFile(senderName, targetName, file, pathToSave);
-            client.receiveMessage(new Message("File size : " + ((int) (file.length() / 1000)) + "Ko", senderName, "#00ff00", 14));
+
+            receiver.beginReceiveFile(currentSenderName, currentTargetName, file, pathToSave);
+            receiver.receiveMessage(new Message("File size : " + ((int) (file.length() / 1000)) + "Ko", currentSenderName, "#00ff00", 14));
 
             try {
                 notifyStateTransfer(file, 0, 0);
                 // Send file
                 input = new FileInputStream(file);
-                sendFileHelper(client, file);
+                sendContentFileHelper(receiver, file);
 
                 input.close();
-                client.endReceiveFile();
+                receiver.endReceiveFile();
                 notifyStateTransfer(file, 0, 1);
             } catch (IOException ex) {
                 Logger.getLogger(FileTransfer.class.getName()).log(Level.SEVERE, null, ex);
             }
 
-        } catch (NotBoundException | AccessException | FileNotFoundException ex) {
+        } catch (AccessException | FileNotFoundException ex) {
             Logger.getLogger(FileTransfer.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    private void sendFileHelper(ExchangeClient client, File file) throws RemoteException {
+    private void sendContentFileHelper(ExchangeClient client, File file) throws RemoteException {
         try {
-            int bufferSize = 65536;
-            byte[] buf = new byte[bufferSize];
-            int bytesRead;
-            int totalState = ((int) (file.length() / bufferSize))+1;
-            int it = 1;
+            // Init fields
+            byte[] buf = new byte[computeBufferSize((int) file.length())];
+            int bytesRead, totalBytesRead = 0;
+            // Loop to read all the content of the file
             while ((bytesRead = input.read(buf)) > 0) {
+                // Bytes transfer
                 client.receiveContentFile(buf, bytesRead);
-                int percent = (it * 100) / totalState;
-                int totalBytesRead = ((it-1) * bufferSize) + bytesRead;
-                String content = totalBytesRead / 1000 + "/" + file.length() / 1000 + "KO => " + percent + "%";
-                sendFileTransferMessage(client,content , currentSenderName);
-                it++;
+                totalBytesRead += bytesRead;
+                // Give infos to sender and receiver
+                String content = computeContent(totalBytesRead, (int) file.length());
+                sendFileTransferMessage(client, content);
+                sendFileTransferMessage((ExchangeClient) this, content);
             }
         } catch (IOException ex) {
-            Logger.getLogger(FileTransfer.class.getName()).log(Level.SEVERE, null, ex);
+            // Give infos to sender and receiver
+            String content = "Error: IO Exception.";
+            sendFileTransferMessage(client, content, true);
+            sendFileTransferMessage((ExchangeClient) this, content, true);
+            //Logger.getLogger(FileTransfer.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    private void sendFileTransferMessage(ExchangeClient client, String content, String senderName) {
-        Message message = new Message(content, senderName, "#00ff00", 14);
+
+    private String computeContent(int totalBytesRead, int fileLength) {
+        int percent = (totalBytesRead * 100) / fileLength;
+        return totalBytesRead / 1000 + "/" + fileLength / 1000 + "KO => " + percent + "%";
+    }
+
+    private int computeBufferSize(int fileLength) {
+        if (fileLength > 40000000) {
+            return 4194304;
+        }
+        if (fileLength > 20000000) {
+            return 2097152;
+        }
+        if (fileLength > 10000000) {
+            return 1048576;
+        }
+        if (fileLength > 5000000) {
+            return 524288;
+        }
+        if (fileLength > 2000000) {
+            return 262144;
+        }
+        if (fileLength > 1000000) {
+            return 131072;
+        }
+        return 65536;
+    }
+
+    private void sendFileTransferMessage(ExchangeClient client, String content) {
+        sendFileTransferMessage(client, content, false);
+    }
+
+    private void sendFileTransferMessage(ExchangeClient client, String content, boolean error) {
+        String color = (error) ? "#ff0000" : "#00ff00";
+        Message message = new Message(content, currentSenderName, color, 14);
         try {
             client.receiveMessage(message);
         } catch (RemoteException ex) {

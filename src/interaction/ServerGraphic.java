@@ -17,6 +17,8 @@ import javafx.animation.KeyFrame;
 import javafx.animation.SequentialTransition;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleListProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -24,6 +26,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -49,6 +52,8 @@ public class ServerGraphic extends AbstractServer implements Initializable {
     private TextFlow chatBox;
     @FXML
     private ScrollPane chatBoxContainer;
+    @FXML
+    private ListView listUsersConnected;
 
     public ServerGraphic() throws RemoteException {
         setFolderName("ServerGraphic");
@@ -56,6 +61,7 @@ public class ServerGraphic extends AbstractServer implements Initializable {
 
     /**
      * Initializes the controller class.
+     *
      * @param url .
      * @param rb .
      */
@@ -68,14 +74,17 @@ public class ServerGraphic extends AbstractServer implements Initializable {
                     chatBoxContainer.layout();
                     chatBoxContainer.setVvalue(1.0f);
                 }));
-        
+
         try {
             // Show ip
             receiveMessage(new Message("Adresse IP = " + getServerHostName(), SERVER_NAME));
         } catch (RemoteException ex) {
             Logger.getLogger(ServerGraphic.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
+        // Bind
+        // new SimpleListProperty(FXCollections.observableArrayList(getListClients())).bind(listUsersConnected.itemsProperty());
+        //listUsersConnected.itemsProperty().bind(new SimpleListProperty(FXCollections.observableArrayList(getListClients())));
         // Send infos to clients
         Timeline timeline1 = new Timeline();
         timeline1.getKeyFrames().add(new KeyFrame(Duration.millis(5000), (ActionEvent actionEvent) -> {
@@ -124,4 +133,11 @@ public class ServerGraphic extends AbstractServer implements Initializable {
         return AbstractServer.askListFiles(ServerGraphic.SERVER_NAME);
     }
 
+    @Override
+    void modifyListView() throws RemoteException {
+        Platform.runLater(() -> {
+            listUsersConnected.setItems(FXCollections.observableArrayList(getListClients()));
+        });
+    }
+    
 }

@@ -1,10 +1,7 @@
 package interaction;
 
 import java.io.File;
-import java.rmi.AccessException;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -54,6 +51,11 @@ public class ServerConsole extends AbstractServer {
     @Override
     public void disconnect(String nameClient) throws RemoteException {
         
+    }
+
+    @Override
+    void modifyListView() throws RemoteException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     

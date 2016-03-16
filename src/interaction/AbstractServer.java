@@ -95,13 +95,17 @@ public abstract class AbstractServer extends FileTransfer implements Server {
     public void connect(String nameClient, Client client) throws RemoteException {
         Network.getRegistry().rebind(nameClient, client);
         this.addClient(nameClient);
-        this.sendMessage(new Message(nameClient + " is now connected.", ServerConsole.SERVER_NAME));
+        this.sendMessage(new Message(nameClient + " is now connected.", folderName));
+        modifyListView();
     }
+    
+    abstract void modifyListView() throws RemoteException;
 
     @Override
     public void disconnect(String nameClient) throws RemoteException {
         this.removeClient(nameClient);
         this.sendMessage(new Message(nameClient + " is now disconnected.", ServerConsole.SERVER_NAME));
+        modifyListView();
     }
 
     public static ArrayList<File> askListFiles(String folderName) {
