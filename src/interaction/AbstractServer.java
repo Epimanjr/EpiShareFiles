@@ -132,5 +132,4 @@ public abstract class AbstractServer extends FileTransfer implements Server {
         return serverHostName;
     }
 
-    
 }

@@ -9,6 +9,7 @@ import java.io.File;
 import java.net.URL;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.Registry;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -20,7 +21,10 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -54,6 +58,8 @@ public class ServerGraphic extends AbstractServer implements Initializable {
     private ScrollPane chatBoxContainer;
     @FXML
     private ListView listUsersConnected;
+
+    ExchangeClient currentUser;
 
     public ServerGraphic() throws RemoteException {
         setFolderName("ServerGraphic");
@@ -139,5 +145,57 @@ public class ServerGraphic extends AbstractServer implements Initializable {
             listUsersConnected.setItems(FXCollections.observableArrayList(getListClients()));
         });
     }
-    
+
+    /*@FXML
+    public void quickUser(ActionEvent event) {
+        int indice = listUsersConnected.getSelectionModel().getSelectedIndex();
+        SequentialTransition animation = FileTransfer.createAnimation(5000, 5000);
+        String strUser = getListClients().get(indice);
+        Service service = contactUser(strUser);
+        animation.setOnFinished((ActionEvent event1) -> {
+            receiveQuickMessage("TimeOut: unable to contact " + strUser + ".");
+            service.cancel();
+        });
+        service.setOnSucceeded((Event event1) -> {
+            animation.stop();
+            receiveQuickMessage( "Connection with " + strUser + " OK.");
+            try {
+                // Quick !
+                //currentUser.quick();
+                removeClient(strUser);
+                modifyListView();
+            } catch (RemoteException ex) {
+                Logger.getLogger(ServerGraphic.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+        service.setOnRunning((Event event1) -> {
+            animation.play();
+            receiveQuickMessage("Trying to connect with " + strUser + " ... ");
+        });
+        service.start();
+    }
+
+    private void receiveQuickMessage(String content) {
+        try {
+            receiveMessage(new Message(content, getFolderName()));
+        } catch (RemoteException ex) {
+            Logger.getLogger(ServerGraphic.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private Service contactUser(String user) {
+        return new Service() {
+            @Override
+            protected Task createTask() {
+                return new Task() {
+                    @Override
+                    protected Object call() throws Exception {
+                        Registry registry = Network.getRegistry();
+                        currentUser = (ExchangeClient) registry.lookup(user);
+                        return null;
+                    }
+                };
+            }
+        };
+    }*/
 }
