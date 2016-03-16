@@ -40,7 +40,6 @@ public class ClientConsole extends AbstractClient {
             server.connect(name, client);
             // 
             client.sendFile(name, ServerConsole.SERVER_NAME, new File("test.pdf"));
-            server.sendFileToAll(name, new File("test.pdf"));
             /*while (true) {
                 String message = sc.nextLine();
                 if (message.equals("exit")) {

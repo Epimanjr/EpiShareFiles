@@ -65,10 +65,8 @@ public class ClientGraphic extends AbstractClient implements Initializable {
     @FXML
     private ListView listFiles;
 
-    Server server = null;
+    
     boolean connect = !false;
-
-    String currentNickname = "";
 
     ArrayList<File> arraylistFiles = null;
 
@@ -141,7 +139,7 @@ public class ClientGraphic extends AbstractClient implements Initializable {
                     public Void call() {
                         indices.stream().forEach((Integer i) -> {
                             try {
-                                server.askFile(currentNickname, arraylistFiles.get(i), pathToSave);
+                                getServer().askFile(getCurrentNickname(), arraylistFiles.get(i), pathToSave);
                             } catch (RemoteException ex) {
                                 Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
                             }
@@ -171,7 +169,7 @@ public class ClientGraphic extends AbstractClient implements Initializable {
         File file = fileChooser.showOpenDialog(null);
 
         try {
-            sendFile(currentNickname, ServerGraphic.SERVER_NAME, file);
+            sendFile(getCurrentNickname(), ServerGraphic.SERVER_NAME, file);
             //server.sendFileToAll(currentNickname, file);
         } catch (RemoteException ex) {
             Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
@@ -180,7 +178,7 @@ public class ClientGraphic extends AbstractClient implements Initializable {
 
     public void actionSendMessage(ActionEvent event) {
         try {
-            server.sendMessage(new Message(tfMessage.getText(), currentNickname));
+            getServer().sendMessage(new Message(tfMessage.getText(), getCurrentNickname()));
             tfMessage.setText("");
         } catch (RemoteException ex) {
             Logger.getLogger(ClientGraphic.class.getName()).log(Level.SEVERE, null, ex);
@@ -188,8 +186,8 @@ public class ClientGraphic extends AbstractClient implements Initializable {
     }
 
     public void actionConnect(String nickname, Server server) {
-        this.server = server;
-        currentNickname = nickname;
+        setServer(server);
+        setCurrentNickname(nickname);
         Platform.runLater(() -> {
             labConnectStatus.setText("Connected as " + nickname);
         });
@@ -205,12 +203,12 @@ public class ClientGraphic extends AbstractClient implements Initializable {
         Platform.runLater(() -> {
             try {
                 // List users
-                ArrayList<String> listTmp = server.askListConnectedUsers();
+                ArrayList<String> listTmp = getServer().askListConnectedUsers();
                 listUsers.setItems(FXCollections.observableArrayList(listTmp));
                 labClientsConnected.setText(listTmp.size() + " client(s) connected.");
                 // List files
                 ArrayList<String> nameFiles = new ArrayList<>();
-                arraylistFiles = server.askListFiles();
+                arraylistFiles = getServer().askListFiles();
                 arraylistFiles.stream().forEach((f) -> {
                     nameFiles.add(f.getName());
                 });
@@ -239,9 +237,5 @@ public class ClientGraphic extends AbstractClient implements Initializable {
         return chatBox;
     }
 
-    @Override
-    public void disconnect() throws RemoteException {
-        server.disconnect(currentNickname);
-        System.exit(0);
-    }
+    
 }

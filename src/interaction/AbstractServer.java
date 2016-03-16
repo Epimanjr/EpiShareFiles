@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Abstract Server. For ServerConsole and ServerGraphic.
  *
  * @author Maxime BLAISE
  * @version 1.0
@@ -25,21 +26,27 @@ public abstract class AbstractServer extends FileTransfer implements Server {
      */
     private final ArrayList<String> listClients = new ArrayList<>();
 
+    /**
+     * Name of the folder which contains shared files.
+     */
     private String folderName;
 
+    /**
+     * IPv4 address for client.
+     */
     private String serverHostName;
 
+    /**
+     * Constructor which initialize the server hostname.
+     *
+     * @throws RemoteException If there is network problem
+     */
     public AbstractServer() throws RemoteException {
         try {
             serverHostName = Inet4Address.getLocalHost().getHostAddress();
         } catch (UnknownHostException ex) {
-            Logger.getLogger(AbstractServer.class.getName()).log(Level.SEVERE, null, ex);
+            serverHostName = "UnknownHostException";
         }
-
-    }
-
-    public ArrayList<String> getListClients() {
-        return listClients;
     }
 
     /**
@@ -66,22 +73,11 @@ public abstract class AbstractServer extends FileTransfer implements Server {
     }
 
     @Override
-    public void sendFileToAll(String senderName, File file) throws RemoteException {
-        System.out.println("Send " + file.getName() + " to all clients : ");
-        for (String str : this.listClients) {
-            if (!str.equals(senderName)) {
-                sendFile(senderName, str, file);
-            }
-        }
-        System.out.println("All send complete.");
-    }
-
-    @Override
     public void sendMessage(Message message) throws RemoteException {
         receiveMessage(message);
         Registry registry = LocateRegistry.getRegistry(3212);
         // Clients loop
-        for (String str : this.getListClients()) {
+        for (String str : listClients) {
             try {
                 Client client = (Client) registry.lookup(str);
                 client.receiveMessage(message);
@@ -98,7 +94,7 @@ public abstract class AbstractServer extends FileTransfer implements Server {
         this.sendMessage(new Message(nameClient + " is now connected.", folderName));
         modifyListView();
     }
-    
+
     abstract void modifyListView() throws RemoteException;
 
     @Override
@@ -132,4 +128,12 @@ public abstract class AbstractServer extends FileTransfer implements Server {
         return serverHostName;
     }
 
+    public void setServerHostName(String serverHostName) {
+        this.serverHostName = serverHostName;
+    }
+
+    public ArrayList<String> getListClients() {
+        return listClients;
+    }
+    
 }
